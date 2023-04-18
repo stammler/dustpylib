@@ -1,2 +1,2 @@
-# dustpy_lib
+# dustpylib
 Library for DustPy tools and customizations
