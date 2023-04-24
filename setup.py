@@ -6,6 +6,6 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "dsharp_opac", "dustpy", "numpy", "scipy",
+        "astropy", "dsharp_opac", "dustpy", "numpy", "scipy",
     ],
 )
