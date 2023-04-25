@@ -924,7 +924,7 @@ def read_image(path):
     d = {
         "x": x,
         "y": y,
-        "lambda": lam*1.e-4,
+        "lambda": lam,
         "I": I,
         "Q": Q,
         "U": U,
@@ -952,11 +952,11 @@ def read_spectrum(path):
     sed = np.fromfile(path, dtype=float, count=-1, sep=" ")
     sed = sed[2:].reshape((-1, 2))
 
-    lam = sed[:, 0]
+    lam = sed[:, 0]*1.e-4
     flux = sed[:, 1]
 
     d = {
-        "lambda": lam*1.e-4,
+        "lambda": lam,
         "flux": flux,
     }
 
