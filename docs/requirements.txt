@@ -6,6 +6,7 @@ jupyter
 matplotlib
 nbconvert
 nbsphinx
+numpy
 numpydoc
 pandoc
 recommonmark
