@@ -17,8 +17,9 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.10"
+  apt_packages:
+    - gcc
   jobs:
     pre_install:
-      - apt-get install gcc
       - pip install numpy
       - pip install -r docs/requirements.txt
