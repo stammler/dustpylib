@@ -13,11 +13,13 @@ sphinx:
 formats:
   - pdf
 
-# Optionally set the version of Python and requirements required to build your docs
-python:
-  version: 3.8
+build:
   jobs:
     pre_install:
       - pip install numpy
+
+# Optionally set the version of Python and requirements required to build your docs
+python:
+  version: 3.8
   install:
     - requirements: docs/requirements.txt
