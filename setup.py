@@ -24,9 +24,9 @@ setup(
     long_description_content_type="text/markdown",
     keywords="science physics mathematics visualization",
 
-    url="https://github.com/stammler/cornerhex/",
-    project_urls={"Source Code": "https://github.com/stammler/cornerhex/",
-                  "Documentation": "https://cornerhex.rtfd.io/"
+    url="https://github.com/stammler/dustpylib/",
+    project_urls={"Source Code": "https://github.com/stammler/dustpylib/",
+                  "Documentation": "https://dustpylib.rtfd.io/"
                   },
 
     author="Sebastian Stammler, Tilman Birnstiel",
