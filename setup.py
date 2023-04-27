@@ -54,7 +54,6 @@ setup(
 
     packages=find_packages(),
     install_requires=[
-        "numpy",
         "astropy",
         "dsharp_opac",
         "dustpy",
