@@ -20,3 +20,4 @@ build:
   jobs:
     pre_install:
       - pip install numpy
+      - pip install -r docs/requirements.txt
