@@ -4,3 +4,4 @@ dustpy
 matplotlib
 numpy
 scipy
+simframe

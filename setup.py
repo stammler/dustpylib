@@ -48,14 +48,19 @@ setup(
                  "Topic :: Education",
                  "Topic :: Scientific/Engineering",
                  "Topic :: Scientific/Engineering :: Astronomy",
-                 "Topic :: Scientific/Engineering :: Mathematics",
                  "Topic :: Scientific/Engineering :: Physics",
                  "Topic :: Scientific/Engineering :: Visualization"
                  ],
 
     packages=find_packages(),
     install_requires=[
-        "astropy", "dsharp_opac", "dustpy", "matplotlib", "numpy", "scipy",
+        "astropy",
+        "dsharp_opac",
+        "dustpy",
+        "matplotlib",
+        "numpy",
+        "scipy",
+        "simframe",
     ],
     include_package_data=True,
     zip_safe=False,
