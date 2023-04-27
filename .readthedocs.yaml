@@ -19,5 +19,6 @@ build:
     python: "3.10"
   jobs:
     pre_install:
+      - apt-get install gcc
       - pip install numpy
       - pip install -r docs/requirements.txt
