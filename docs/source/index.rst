@@ -1,16 +1,16 @@
 ``dustpylib`` Documentation
 ===========================
 
-| ``dustpylib`` collection of tools and extensions for the ``DustPy`` package for dust evolution on protoplanetary disks.
+| ``dustpylib`` is a collection of tools and extensions for the ``DustPy`` package for dust evolution on protoplanetary disks.
 | When using any of the modules provided by ``dustpylib``, please cite the required sources given in the respective example notebook.
+
+| For information about the usage of ``DustPy``, please have a look at the `DustPy documentation <https://stammler.github.io/dustpy/>`_.
 
 Installation
 ------------
 
 | To install ``dustpylib`` type
 | ``pip install dustpylib``
-
-| This list with examples of ``dustpylib`` modules.
 
 .. toctree::
    :maxdepth: 2
