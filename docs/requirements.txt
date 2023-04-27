@@ -1,0 +1,16 @@
+astropy
+dsharp_opac
+dustpy
+ipykernel
+jupyter
+matplotlib
+nbconvert
+nbsphinx
+numpy
+numpydoc
+pandoc
+recommonmark
+scipy
+sphinx
+sphinx-automodapi
+sphinx_rtd_theme
