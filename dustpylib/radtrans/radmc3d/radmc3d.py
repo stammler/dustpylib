@@ -699,7 +699,6 @@ class Model():
         zscat_nochop = zscat.copy()
 
         mu = np.cos(theta * np.pi / 180.)
-        # dmu = np.diff(mu)
 
         for grain in range(n_a):
             for i in range(n_lam):
@@ -710,16 +709,6 @@ class Model():
                     else:
                         iiang = np.min(iang) - 1
                     zscat[grain, i, iang, :] = zscat[grain, i, iiang, :]
-
-                    # zav = 0.5 * (zscat[grain, i, 1:, 0] + zscat[grain, i, :-1, 0])
-                    # dum = -0.5 * zav * dmu
-                    # integral = dum.sum() * 4 * np.pi
-                    # k_sca[grain, i] = integral
-
-                    # g = <mu> = 2 pi / kappa * int(Z11(mu) mu dmu)
-                    # mu_av = 0.5 * (mu[1:] + mu[:-1])
-                    # P_mu = 2 * np.pi / k_sca[grain, i] * 0.5 * (zscat[grain, i, 1:, 0] + zscat[grain, i, :-1, 0])
-                    # g[grain, i] = np.sum(P_mu * mu_av * dmu)
 
                     k_sca[grain, i] = -2 * np.pi * np.trapz(zscat[grain, i, :, 0], x=mu)
                     g[grain, i] = -2 * np.pi * np.trapz(zscat[grain, i, :, 0] * mu, x=mu) / k_sca[grain, i]
