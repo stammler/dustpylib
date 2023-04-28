@@ -48,6 +48,12 @@ exclude_patterns = [
     '**.ipynb_checkpoints',
 ]
 
+# Autodoc options
+autodoc_default_options = {
+    "members": True,
+}
+autodoc_typehints = "description"
+
 
 # -- Options for HTML output -------------------------------------------------
 

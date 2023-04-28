@@ -64,13 +64,23 @@ class Model():
 
         #: Temperature profile in K from ``DustPy``
         self.T_gas_ = None
+
+        #: Particle size array in cm from ``DustPy``
         self.a_dust_ = None
+
+        #: Dust scale heights array in cm from ``DustPy``
         self.H_dust_ = None
+
+        #: Dust midplane density profile in g/cm³ from ``DustPy``
         self.rho_dust_ = None
 
+        #: Directory to store the ``RADMC-3D input files``
         self.datadir = "radmc3d"
+
+        #: Opacity model. "birnstiel2018" (default) or "ricci2010"
         self.opacity = "birnstiel2018"
 
+        #: ``RADMC-3D`` options for radmc3d.inp file
         self.radmc3d_options = {
             "modified_random_walk": 1,
             "iranfreqmode": 1,
@@ -84,6 +94,7 @@ class Model():
         else:
             raise RuntimeError("Unknown data type of 'sim'.")
 
+        #: Radial grid cell interfaces for ``RADMC-3D`` model
         self.ri_grid = self._refine_inner_grid(self.ri_grid_)
 
         lam1 = np.geomspace(0.1e-4, 7.e-4, 20, endpoint=False)
@@ -111,6 +122,9 @@ class Model():
 
     @property
     def ai_grid(self):
+        """
+        Particle size bin interfaces in cm for ``RADMC-3D`` model
+        """
         return self._ai_grid
 
     @ai_grid.setter
@@ -120,6 +134,10 @@ class Model():
 
     @property
     def ac_grid(self):
+        """
+        Particle size bin centers in cm for ``RADMC-3D`` model.
+        Do not set manually. Only use size bin interfaces.
+        """
         return self._ac_grid
 
     @ac_grid.setter
@@ -128,6 +146,9 @@ class Model():
 
     @property
     def ri_grid(self):
+        """
+        Radial grid cell interfaces in cm for ``RADMC-3D`` model.
+        """
         return self._ri_grid
 
     @ri_grid.setter
@@ -137,6 +158,10 @@ class Model():
 
     @property
     def rc_grid(self):
+        """
+        Radial grid cell centers in cm for ``RADMC-3D`` model.
+        Do not set manually. Only use cell interfaces.
+        """
         return self._rc_grid
 
     @rc_grid.setter
@@ -145,6 +170,9 @@ class Model():
 
     @property
     def thetai_grid(self):
+        """
+        Polar grid cell interfaces in rad for ``RADMC-3D`` model.
+        """
         return self._thetai_grid
 
     @thetai_grid.setter
@@ -154,6 +182,10 @@ class Model():
 
     @property
     def thetac_grid(self):
+        """
+        Polar grid cell centers in rad for ``RADMC-3D`` model.
+        Do not set manually. Only use cell interfaces.
+        """
         return self._thetac_grid
 
     @thetac_grid.setter
@@ -162,6 +194,9 @@ class Model():
 
     @property
     def phii_grid(self):
+        """
+        Azimuthal grid cell interfaces in rad for ``RADMC-3D`` model.
+        """
         return self._phii_grid
 
     @phii_grid.setter
@@ -171,6 +206,10 @@ class Model():
 
     @property
     def phic_grid(self):
+        """
+        Azimuthal grid cell centers in rad for ``RADMC-3D`` model.
+        Do not set manually. Only use cell interfaces.
+        """
         return self._phic_grid
 
     @phic_grid.setter
