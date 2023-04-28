@@ -19,6 +19,13 @@ from types import SimpleNamespace
 class Model():
     """
     Main model class that can read in ``DustPy`` models and can create ``RADMC-3D`` input files.
+    Attributes with trailing underscore are imported from ``DustPy``, while the other attributes
+    will be used to create ``RADMC-3D`` input files.
+
+    Attributes
+    ----------
+    M_star_ : float
+        Stellar mass in g
     """
 
     def __init__(self, sim):
