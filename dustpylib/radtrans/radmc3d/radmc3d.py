@@ -21,11 +21,6 @@ class Model():
     Main model class that can read in ``DustPy`` models and can create ``RADMC-3D`` input files.
     Attributes with trailing underscore are imported from ``DustPy``, while the other attributes
     will be used to create ``RADMC-3D`` input files.
-
-    Attributes
-    ----------
-    M_star_ : float
-        Stellar mass in g
     """
 
     def __init__(self, sim):
@@ -52,11 +47,16 @@ class Model():
         self._phic_grid = None
 
         self.ri_grid_ = None
+        """Radial grid cell interfaces from ``DustPy`` model"""
         self.rc_grid_ = None
+        """Radial grid cell centers from ``DustPy`` model"""
 
         self.M_star_ = None
+        """Stellar mass in g"""
         self.R_star_ = None
+        """Stellar radius in cm"""
         self.T_star_ = None
+        """Stellar effective temperature in K"""
 
         self.T_gas_ = None
         self.a_dust_ = None
