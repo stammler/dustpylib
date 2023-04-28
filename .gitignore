@@ -130,3 +130,11 @@ dmypy.json
 
 # IDEs
 .vscode/
+
+# RADMC-3D files
+*.dat
+*.inp
+*.out
+
+# Unnecessary directories/files from documentation
+api/
