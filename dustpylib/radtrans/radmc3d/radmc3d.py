@@ -724,7 +724,7 @@ def read_model(datadir=""):
 
     Parameters
     ----------
-    datadir : str, optiona, default: ""
+    datadir : str, optional, default: ""
         The path of the directory with the `RADMC-3D` input files
 
     Returns

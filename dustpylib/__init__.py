@@ -1,5 +1,5 @@
 """
-`dustpylib` is a package with auxiliary tools and extensions for the dust evolution software `DustPy`.
+``dustpylib`` is a package with auxiliary tools and extensions for the dust evolution software ``DustPy``.
 """
 
 from dustpylib import radtrans
