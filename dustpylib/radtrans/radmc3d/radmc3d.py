@@ -37,6 +37,7 @@ class Model():
         self._ai_grid = None
         self._ac_grid = None
 
+        #: Wavelength grid for ``RADMC-3D`` in cm
         self.lam_grid = None
 
         self._ri_grid = None
@@ -46,18 +47,22 @@ class Model():
         self._phii_grid = None
         self._phic_grid = None
 
+        #: Radial grid cell interfaces from ``DustPy`` model
         self.ri_grid_ = None
-        """Radial grid cell interfaces from ``DustPy`` model"""
+
+        #: Radial grid cell centers from ``DustPy`` model
         self.rc_grid_ = None
-        """Radial grid cell centers from ``DustPy`` model"""
 
+        #: Stellar mass in g
         self.M_star_ = None
-        """Stellar mass in g"""
-        self.R_star_ = None
-        """Stellar radius in cm"""
-        self.T_star_ = None
-        """Stellar effective temperature in K"""
 
+        #: Stellar radius in cm
+        self.R_star_ = None
+
+        #: Stellar effective temperature in K
+        self.T_star_ = None
+
+        #: Temperature profile in K from ``DustPy``
         self.T_gas_ = None
         self.a_dust_ = None
         self.H_dust_ = None
