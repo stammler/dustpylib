@@ -1,9 +1,9 @@
 """
-This module can be used to create simple, axisymmetric `RADMC-3D` input files
-from `DustPy` models. It furthermore contains simple methods to read `RADMC-3D`
+This module can be used to create simple, axisymmetric ``RADMC-3D`` input files
+from ``DustPy`` models. It furthermore contains simple methods to read ``RADMC-3D``
 images and spectra and methods to inspect the model files. These are only
 meant for models created by this module. For more general models, use the
-`Radmc3dPy` module within `RADMC-3D`.
+``Radmc3dPy` module within ``RADMC-3D``.
 """
 
 import dsharp_opac as do
@@ -17,16 +17,19 @@ from types import SimpleNamespace
 
 
 class Model():
+    """
+    Main model class that can read in ``DustPy`` models and can create ``RADMC-3D`` input files.
+    """
 
     def __init__(self, sim):
         """
-        Class to create a simple axisymmetric `RADMC-3D` model from `DustPy` simulation data.
+        Class to create a simple axisymmetric ``RADMC-3D`` model from ``DustPy`` simulation data.
 
         Parameters
         ----------
         sim : namespace or DustPy.Simulation
-            The `DustPy` model data. Can either be a Simulation object or
-            a namespace returned from Writer.read.output().
+            The ``DustPy`` model data. Can either be a ``Simulation`` object or
+            a namespace returned from ``Writer.read.output()``.
         """
 
         self._ai_grid = None
@@ -164,7 +167,7 @@ class Model():
 
     def _init_from_dustpy(self, sim):
         """
-        This function initializes the model from a `DustPy` simulation object.
+        This function initializes the model from a ``DustPy`` simulation object.
         """
 
         self.M_star_ = sim.star.M
@@ -183,7 +186,7 @@ class Model():
     def _init_from_namespace(self, sim):
         """
         This function inizializes the model from a namespace as returned by
-        `DustPy`'s `Writer.read.output()` method.
+        ``Writer.read.output()`` method.
         """
 
         self.M_star_ = sim.star.M[0]
@@ -201,7 +204,7 @@ class Model():
 
     def write_files(self, datadir=None, opacity="birnstiel2018"):
         """
-        Function writes all required RADMC3D input files.
+        Function writes all required ``RADMC-3D`` input files.
 
         Parameters
         ----------
@@ -718,14 +721,14 @@ class Model():
 
 def read_model(datadir=""):
     """
-    This functions reads the `RADMC-3D` model files and returns a namespace with the data.
-    It should only be used for models created by `dustpylib`. For more complex models
-    use `Radmc3dPy`.
+    This functions reads the ``RADMC-3D`` model files and returns a namespace with the data.
+    It should only be used for models created by ``dustpylib``. For more complex models
+    use ``Radmc3dPy``.
 
     Parameters
     ----------
     datadir : str, optional, default: ""
-        The path of the directory with the `RADMC-3D` input files
+        The path of the directory with the ``RADMC-3D`` input files
 
     Returns
     -------
@@ -745,14 +748,14 @@ def read_model(datadir=""):
 
 def _read_amr_grid_inp(datadir=""):
     """
-    This functions reads the `RADMC-3D` model files and returns a namespace with the grid.
-    It should only be used for models created by `dustpylib`. For more complex models
-    use `Radmc3dPy`.
+    This functions reads the ``RADMC-3D`` model files and returns a namespace with the grid.
+    It should only be used for models created by ``dustpylib``. For more complex models
+    use ``Radmc3dPy``.
 
     Parameters
     ----------
     datadir : str, optiona, default: ""
-        The path of the directory with the `RADMC-3D` input files
+        The path of the directory with the ``RADMC-3D`` input files
 
     Returns
     -------
@@ -786,14 +789,14 @@ def _read_amr_grid_inp(datadir=""):
 
 def _read_dust_density_inp(datadir=""):
     """
-    This functions reads the `RADMC-3D` model files and returns the dust density.
-    It should only be used for models created by `dustpylib`. For more complex models
-    use `Radmc3dPy`.
+    This functions reads the ``RADMC-3D`` model files and returns the dust density.
+    It should only be used for models created by ``dustpylib``. For more complex models
+    use ``Radmc3dPy``.
 
     Parameters
     ----------
     datadir : str, optiona, default: ""
-        The path of the directory with the `RADMC-3D` input files
+        The path of the directory with the ``RADMC-3D`` input files
 
     Returns
     -------
@@ -824,14 +827,14 @@ def _read_dust_density_inp(datadir=""):
 
 def _read_dust_temperature_dat(datadir=""):
     """
-    This functions reads the `RADMC-3D` model files and returns the dust temperature.
-    It should only be used for models created by `dustpylib`. For more complex models
-    use `Radmc3dPy`.
+    This functions reads the ``RADMC-3D`` model files and returns the dust temperature.
+    It should only be used for models created by ``dustpylib``. For more complex models
+    use ``Radmc3dPy``.
 
     Parameters
     ----------
     datadir : str, optiona, default: ""
-        The path of the directory with the `RADMC-3D` input files
+        The path of the directory with the ``RADMC-3D`` input files
 
     Returns
     -------
@@ -862,7 +865,7 @@ def _read_dust_temperature_dat(datadir=""):
 
 def read_image(path):
     """
-    This functions reads an image file created by `RADMC-3D` and returns a dictionary
+    This functions reads an image file created by ``RADMC-3D`` and returns a dictionary
     with the image data.
 
     Parameters
@@ -924,7 +927,7 @@ def read_image(path):
 
 def read_spectrum(path):
     """
-    This functions reads an spectrum file created by `RADMC-3D` and returns a dictionary
+    This functions reads a spectrum file created by ``RADMC-3D`` and returns a dictionary
     with the SED data.
 
     Parameters
