@@ -8,6 +8,7 @@ meant for models created by this module. For more general models, use the
 
 import dsharp_opac as do
 from dustpy import Simulation
+from dustpylib.grid.refinement import refine_radial_local
 import numpy as np
 import os
 from pathlib import Path
@@ -21,6 +22,17 @@ class Model():
     Main model class that can read in ``DustPy`` models and can create ``RADMC-3D`` input files.
     Attributes with trailing underscore are imported from ``DustPy``, while the other attributes
     will be used to create ``RADMC-3D`` input files.
+
+    Methods
+    -------
+    read_image :
+        Reads ``RADMC-3D`` image file
+    read_spectrum :
+        Reads ``RADMC_3d`` spectrum file
+    write_files :
+        Writes all required ``RADMC-3D`` input files into the specified directory
+    write_opacity_files :
+        Writes only the required ``RADMC-3D`` opacity into files into the specified directory
     """
 
     def __init__(self, sim):
@@ -95,7 +107,7 @@ class Model():
             raise RuntimeError("Unknown data type of 'sim'.")
 
         #: Radial grid cell interfaces for ``RADMC-3D`` model
-        self.ri_grid = self._refine_inner_grid(self.ri_grid_)
+        self.ri_grid = refine_radial_local(self.ri_grid_, 0., num=3)
 
         lam1 = np.geomspace(0.1e-4, 7.e-4, 20, endpoint=False)
         lam2 = np.geomspace(7.e-4, 25.e-4, 100, endpoint=False)
@@ -610,34 +622,6 @@ class Model():
                             )
                         )
             print("done.")
-
-    def _refine_inner_grid(self, ri, N=4, num=3):
-        """
-        This function refines the radial grid at its inner edge.
-
-        Parameters
-        ----------
-        ri : array-like
-            The radial grid cell interfaces
-        N : int, optional, default: 4
-            Number of grid cells that should be refined
-        num : int, optional, default: 2
-            Number of recursive refinement steps
-
-        Returns
-        -------
-        ri : array-like
-            The new radial grid cell interfaces
-        """
-        if num == 0:
-            return ri
-        ri_out = ri[N:]
-        ri_in = np.empty(2*N)
-        for i in range(N):
-            ri_in[2*i] = ri[i]
-            ri_in[2*i+1] = np.sqrt(ri[i]*ri[i+1])
-        ri = np.hstack((ri_in, ri_out))
-        return self._refine_inner_grid(ri, N, num=num-1)
     
     def _calculate_mueller_matrix(self, lam, m, S1, S2, theta=None, k_sca=None):
         import warnings
