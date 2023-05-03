@@ -16,7 +16,10 @@ Installation
    :maxdepth: 2
    :caption: Contents
 
+   grid
+   planetesimals
    radtrans
+   substructures
    A_contrib_bug_feature
    api
 
