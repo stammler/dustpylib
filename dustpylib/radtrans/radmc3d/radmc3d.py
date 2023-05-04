@@ -548,7 +548,7 @@ class Model():
                 f.write("{}".format(i).zfill(mag)+"\n")
         print("done.")
 
-    def _write_dustkapscatmat_inp(self, datadir=None, opacity="birnstiel2018"):
+    def _write_dustkapscatmat_inp(self, datadir=None, opacity=None):
         """
         Function writes the 'dustkapscatmat_*.inp' input files.
 
@@ -560,7 +560,7 @@ class Model():
         """
 
         datadir = self.datadir if datadir is None else datadir
-        opacity = self.opacity if opacity is None else opacity
+        opacity = opacity or self.opacity or 'birnstiel2018'
         Path(datadir).mkdir(parents=True, exist_ok=True)
 
         Nangle = 181
