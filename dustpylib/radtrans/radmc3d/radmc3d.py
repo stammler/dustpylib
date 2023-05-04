@@ -265,7 +265,7 @@ class Model():
         self.H_dust_ = sim.dust.H
         self.rho_dust_ = sim.dust.rho
 
-    def write_files(self, datadir=None, opacity="birnstiel2018"):
+    def write_files(self, datadir=None, opacity=None):
         """
         Function writes all required ``RADMC-3D`` input files.
 
@@ -276,7 +276,7 @@ class Model():
             the datadir attribute of the parent class.
         """
         datadir = self.datadir if datadir is None else datadir
-        opacity = self.opacity if opacity is None else opacity
+        opacity = opacity or self.opacity or 'birnstiel2018'
         self._write_radmc3d_inp(datadir=datadir)
         self._write_stars_inp(datadir=datadir)
         self._write_wavelength_micron_inp(datadir=datadir)
@@ -399,9 +399,9 @@ class Model():
             f.write("0\n")
             f.write(
                 "{:d} {:d} {:d}\n".format(
-                    1 if Nr>1 else 0,
-                    1 if Ntheta>1 else 0,
-                    1 if Nphi>1 else 0,
+                    1 if Nr > 1 else 0,
+                    1 if Ntheta > 1 else 0,
+                    1 if Nphi > 1 else 0,
                 )
             )
             f.write(
@@ -476,7 +476,6 @@ class Model():
                 f.write("{:.6e}\n".format(val))
         print("done.")
 
-
     def _write_dust_temperature_dat(self, datadir=None):
         """
         Function writes the 'dust_temperature.dat' input file.
@@ -510,7 +509,7 @@ class Model():
 
         for i in range(self.ac_grid.shape[0]):
             f_T = interp1d(self.rc_grid_, self.T_gas_, fill_value="extrapolate")
-            T_grid[..., i] =f_T(r_grid)
+            T_grid[..., i] = f_T(r_grid)
 
         with open(path, "w") as f:
             f.write("1\n")
@@ -572,10 +571,10 @@ class Model():
         print()
         print("Computing opacities...")
         print("Using dsharp_opac. Please cite Birnstiel et al. (2018).")
-        if opacity=="birnstiel2018":
+        if opacity == "birnstiel2018":
             print("Using DSHARP mix. Please cite Birnstiel et al. (2018).")
             mix, rho_s = do.get_dsharp_mix()
-        elif opacity=="ricci2010":
+        elif opacity == "ricci2010":
             print("Using Ricci mix. Please cite Ricci et al. (2010).")
             mix, rho_s = do.get_ricci_mix(lmax=self.lam_grid[-1], extrapol=True)
         else:
@@ -587,7 +586,7 @@ class Model():
         opac_dict["zscat"] = zscat
         print()
 
-        for ia in range(Nspec):        
+        for ia in range(Nspec):
             filename = "dustkapscatmat_{}.inp".format("{:d}".format(ia).zfill(mag))
             path = os.path.join(datadir, filename)
             print("Writing {}.....".format(path), end="")
@@ -622,7 +621,7 @@ class Model():
                             )
                         )
             print("done.")
-    
+
     def _calculate_mueller_matrix(self, lam, m, S1, S2, theta=None, k_sca=None):
         import warnings
         """
@@ -752,7 +751,7 @@ class Model():
                     g[grain, i] = -2 * np.pi * np.trapz(zscat[grain, i, :, 0] * mu, x=mu) / k_sca[grain, i]
 
         return zscat, zscat_nochop, k_sca, g
-    
+
 
 def read_model(datadir=""):
     """
@@ -772,14 +771,15 @@ def read_model(datadir=""):
     """
 
     d = {}
-    d["grid"] =  _read_amr_grid_inp(datadir=datadir)
-    d["rho"] =  _read_dust_density_inp(datadir=datadir)
+    d["grid"] = _read_amr_grid_inp(datadir=datadir)
+    d["rho"] = _read_dust_density_inp(datadir=datadir)
 
     path = os.path.join(datadir, "dust_temperature.dat")
     if os.path.isfile(path):
         d["T"] = _read_dust_temperature_dat(datadir=datadir)
 
     return SimpleNamespace(**d)
+
 
 def _read_amr_grid_inp(datadir=""):
     """
@@ -822,6 +822,7 @@ def _read_amr_grid_inp(datadir=""):
 
     return SimpleNamespace(**d)
 
+
 def _read_dust_density_inp(datadir=""):
     """
     This functions reads the ``RADMC-3D`` model files and returns the dust density.
@@ -859,6 +860,7 @@ def _read_dust_density_inp(datadir=""):
     rho = rho.swapaxes(2, 1)
 
     return rho
+
 
 def _read_dust_temperature_dat(datadir=""):
     """
@@ -898,6 +900,7 @@ def _read_dust_temperature_dat(datadir=""):
 
     return T
 
+
 def read_image(path):
     """
     This functions reads an image file created by ``RADMC-3D`` and returns a dictionary
@@ -932,14 +935,14 @@ def read_image(path):
 
     lam = image[6:6+Nlam]*1.e-4
 
-    if iformat==1:
+    if iformat == 1:
         I = image[6+Nlam:].reshape(
             (Nlam, Ny, Nx)
         ).swapaxes(2, 0)
         Q = np.zeros_like(I)
         U = np.zeros_like(I)
         V = np.zeros_like(I)
-    elif iformat==3:
+    elif iformat == 3:
         image = image[6+Nlam:].reshape((-1, 4))
         I = image[:, 0].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
         Q = image[:, 1].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
@@ -959,6 +962,7 @@ def read_image(path):
     }
 
     return d
+
 
 def read_spectrum(path):
     """
