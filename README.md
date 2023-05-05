@@ -19,7 +19,13 @@ For information about the usage of ``DustPy``, please have a look at the [DustPy
 
 For the usage of `dustpylib` please have a look at its [documentation](https://dustpylib.rtfd.io/).
 
-* [Radiative Transfer](https://dustpylib.readthedocs.io/en/latest/radtrans.html)
+* [Grid](https://dustpylib.readthedocs.io/en/latest/grid.html)
+  - [Grid refinement](https://dustpylib.readthedocs.io/en/latest/grid_refinement.html)
+* [Planetesimals](https://dustpylib.readthedocs.io/en/latest/planetesimals.html)
+  - [Planetesimal formation](https://dustpylib.readthedocs.io/en/latest/planetesimal_formation.html)
+* [Radiative transfer](https://dustpylib.readthedocs.io/en/latest/radtrans.html)
   - [RADMC-3D](https://dustpylib.readthedocs.io/en/latest/radmc3d.html)
+* [Substructures](https://dustpylib.readthedocs.io/en/latest/substructures.html)
+  - [Planetary gaps](https://dustpylib.readthedocs.io/en/latest/planetary_gaps.html)<br /> &nbsp;
 * [A. Contributing / Bug reports / Features requests](https://dustpylib.readthedocs.io/en/latest/A_contrib_bug_feature.html)
 
