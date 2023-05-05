@@ -580,7 +580,7 @@ class Model():
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
         opac_dict = do.get_opacities(self.ac_grid, self.lam_grid, rho_s, mix, extrapolate_large_grains=True, n_angle=int((Nangle-1)/2+1))
-        zscat, _, k_sca, g = self._chop_forward_scattering(opac_dict)
+        zscat, _, k_sca, g = do.chop_forward_scattering(opac_dict)
         opac_dict["k_sca"] = k_sca
         opac_dict["g"] = g
         opac_dict["zscat"] = zscat
@@ -621,136 +621,6 @@ class Model():
                             )
                         )
             print("done.")
-
-    def _calculate_mueller_matrix(self, lam, m, S1, S2, theta=None, k_sca=None):
-        import warnings
-        """
-        Calculate the Mueller matrix elements Zij given the scattering amplitudes
-        S1 and S2.
-        Arguments:
-        ----------
-        lam : array
-            wavelength array of length nlam
-        m : array
-            particle mass array of length nm
-        S1, S2 : arrays
-            scattering amplitudes of shape (nm, nlam, nangles), where
-            nangles is the length of the angle array for which the amplitudes
-            were calculated.
-        Keywords:
-        ---------
-        If theta and k_sca are given, a check is done, if the integral over the
-        scattering matrix elements is identical to the scattering opacities.
-        theta : array
-            array of angles
-        k_sca : array
-            array of scattering opacities
-        Notes:
-        ------
-        The conversion factor `factor` is calculated as defined in Kees Dullemonds
-        code `makeopac.py`:
-        > Compute conversion factor from the Sxx matrix elements
-        > from the Bohren & Huffman code to the Zxx matrix elements we
-        > use (such that 2*pi*int_{-1}^{+1}Z11(mu)dmu=kappa_scat).
-        > This includes the factor k^2 (wavenumber squared) to get
-        > the actual cross section in units of cm^2 / ster, and there
-        > is the mass of the grain to get the cross section per gram.
-        """
-        factor = (lam[None, :] / (2 * np.pi))**2 / m[:, None]
-        #
-        # Compute the scattering Mueller matrix elements at each angle
-        #
-        S11 = 0.5 * (np.abs(S2)**2 + np.abs(S1)**2)
-        S12 = 0.5 * (np.abs(S2)**2 - np.abs(S1)**2)
-        S33 = np.real(S2[:] * np.conj(S1[:]))
-        S34 = np.imag(S2[:] * np.conj(S1[:]))
-
-        zscat = np.zeros([len(m), len(lam), S1.shape[-1], 6])
-
-        zscat[..., 0] = S11 * factor[:, :, None]
-        zscat[..., 1] = S12 * factor[:, :, None]
-        zscat[..., 2] = S11 * factor[:, :, None]
-        zscat[..., 3] = S33 * factor[:, :, None]
-        zscat[..., 4] = S34 * factor[:, :, None]
-        zscat[..., 5] = S33 * factor[:, :, None]
-
-        #
-        # If possible, do a check if the integral over zscat is consistent
-        # with kscat
-        #
-        kscat_from_z11 = np.zeros_like(k_sca)
-        error_tolerance = 0.01
-        error_max = 0.0
-        if theta is not None and k_sca is not None:
-            n_theta = len(theta)
-            mu = np.cos(theta * np.pi / 180.)
-            dmu = np.diff(mu)
-            for ia in range(len(m)):
-                for ilam in range(len(lam)):
-                    zav = 0.5 * (zscat[ia, ilam, 1:n_theta, 0] + zscat[ia, ilam, 0:n_theta - 1, 0])
-                    dum = -0.5 * zav * dmu
-                    integral = dum.sum() * 4 * np.pi
-                    kscat_from_z11[ia, ilam] = integral
-                    err = abs(integral / k_sca[ia, ilam] - 1.0)
-                    error_max = max(err, error_max)
-
-        if error_max > error_tolerance:
-            warnings.warn('Maximum error of {:.2g}%: above error tolerance'.format(error_max * 100))
-
-        return {'zscat': zscat, 'kscat_from_z11': kscat_from_z11, 'error_max': error_max}
-
-    def _chop_forward_scattering(self, opac_dict, chopforward=5):
-        """Chop the forward scattering.
-        This part chops the very-forward scattering part of the phase function.
-        This very-forward scattering part is basically the same as no scattering,
-        but is treated by the code as a scattering event. By cutting this part out
-        of the phase function, we avoid those non-scattering scattering events.
-        This needs to recalculate the scattering opacity kappa_sca and asymmetry
-        factor g.
-        Parameters
-        ----------
-        opac_dict : dict
-            opacity dictionary as produced by dsharp_opac
-        chopforward : float
-            up to which angle to we truncate the forward scattering
-        """
-
-        k_sca = opac_dict['k_sca']
-        theta = opac_dict['theta']
-        g = opac_dict['g']
-        rho_s = opac_dict['rho_s']
-        lam = opac_dict['lam']
-        a = opac_dict['a']
-        m = 4 * np.pi / 3 * rho_s * a ** 3
-
-        n_a = len(a)
-        n_lam = len(lam)
-
-        if 'zscat' in opac_dict:
-            zscat = opac_dict['zscat']
-        else:
-            S1 = opac_dict['S1']
-            S2 = opac_dict['S2']
-            zscat = self._calculate_mueller_matrix(lam, m, S1, S2)['zscat']
-
-        zscat_nochop = zscat.copy()
-
-        mu = np.cos(theta * np.pi / 180.)
-
-        for grain in range(n_a):
-            for i in range(n_lam):
-                if chopforward > 0:
-                    iang = np.where(theta < chopforward)
-                    if theta[0] == 0.0:
-                        iiang = np.max(iang) + 1
-                    else:
-                        iiang = np.min(iang) - 1
-                    zscat[grain, i, iang, :] = zscat[grain, i, iiang, :]
-
-                    k_sca[grain, i] = -2 * np.pi * np.trapz(zscat[grain, i, :, 0], x=mu)
-                    g[grain, i] = -2 * np.pi * np.trapz(zscat[grain, i, :, 0] * mu, x=mu) / k_sca[grain, i]
-
-        return zscat, zscat_nochop, k_sca, g
 
 
 def read_model(datadir=""):
