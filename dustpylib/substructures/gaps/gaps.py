@@ -1,5 +1,48 @@
 import numpy as np
 
+def duffell2020(r, a, q, h, alpha0):
+    """
+    Function calculates the planetary gap profile according Duffell (2020).
+
+    Parameters
+    ----------
+    r : array-like, (Nr,)
+        Radial grid
+    a : float
+        Semi-major axis of planet
+    q : float
+        Planet-star mass ratio
+    h : float
+        Aspect ratio at planet location
+    alpha0 : float
+        Unperturbed alpha viscosity parameter
+
+    Returns
+    -------
+    f : array-like, (Nr,)
+        Pertubation of surface density due to planet
+    """
+
+    # Mach number
+    M = 1./h
+
+    # qtilde from equation (18) has shape (Nr,)
+    D = 7*M**1.5/alpha0**0.25
+    qtilde = q/(1+D**3*((r/a)**(1./6.)-1)**6)**(1./3.)
+
+    # delta from equation (9)
+    # Note: there is a typo in the original publication
+    # (q/qw)**3 is added in both cases
+    qnl = 1.04/M**3
+    qw = 34. * qnl * np.sqrt(alpha0*M)
+    delta = np.where(qtilde>qnl, np.sqrt(qnl/qtilde), 1.) + (qtilde/qw)**3
+
+    # Gap shape
+    ret = 1. / (1. + 0.45/(3.*np.pi) * qtilde**2 * M**5 * delta/alpha0)
+
+    return ret
+
+
 def kanagawa2017(r, a, q, h, alpha0):
     """
     Function calculates the planetary gap profile according Kanagawa et al. (2017).
