@@ -35,7 +35,7 @@ class Model():
         Writes only the required ``RADMC-3D`` opacity into files into the specified directory
     """
 
-    def __init__(self, sim):
+    def __init__(self, sim, ignore_last=True):
         """
         Class to create a simple axisymmetric ``RADMC-3D`` model from ``DustPy`` simulation data.
 
@@ -44,6 +44,10 @@ class Model():
         sim : namespace or DustPy.Simulation
             The ``DustPy`` model data. Can either be a ``Simulation`` object or
             a namespace returned from ``Writer.read.output()``.
+        ignore_last : bool, default: True
+            If True, the outermost radial grid cell of DustPy will be ignored.
+            In the default model, the outermost gas grid cell is set to floor
+            value. This can induce unwanted effects on the RADMC3D model.
         """
 
         self._ai_grid = None
@@ -105,6 +109,15 @@ class Model():
             self._init_from_namespace(sim)
         else:
             raise RuntimeError("Unknown data type of 'sim'.")
+
+        # Remove outermost grid cell from data
+        if ignore_last:
+            self.rc_grid_ = self.rc_grid_[:-1]
+            self.ri_grid_ = self.ri_grid_[:-1]
+            self.T_gas_ = self.T_gas_[:-1]
+            self.a_dust_ = self.a_dust_[:-1, :]
+            self.H_dust_ = self.H_dust_[:-1, :]
+            self.rho_dust_ = self.rho_dust_[:-1, :]
 
         #: Radial grid cell interfaces for ``RADMC-3D`` model
         self.ri_grid = refine_radial_local(self.ri_grid_, 0., num=3)
@@ -231,6 +244,11 @@ class Model():
     def _init_from_dustpy(self, sim):
         """
         This function initializes the model from a ``DustPy`` simulation object.
+
+        Parameters
+        ----------
+        sim : dustpy.Simulation
+            DustPy simulation frame
         """
 
         self.M_star_ = sim.star.M
@@ -250,6 +268,11 @@ class Model():
         """
         This function inizializes the model from a namespace as returned by
         ``Writer.read.output()`` method.
+
+        Parameters
+        ----------
+        sim : SimpleNamespace
+            Namespace with DustPy data
         """
 
         self.M_star_ = sim.star.M[0]
@@ -464,8 +487,8 @@ class Model():
                 self.rho_dust_,
                 0.
             ).sum(-1)
-            f_H = interp1d(self.rc_grid_, H_grid_[:, i], fill_value="extrapolate")
-            f_rho = interp1d(self.rc_grid_, rho, fill_value="extrapolate")
+            f_H = interp1d(self.rc_grid_, H_grid_[:, i], fill_value="extrapolate", kind="linear")
+            f_rho = interp1d(self.rc_grid_, rho, fill_value="extrapolate", kind="linear")
             rho_grid[..., i] = np.maximum(1.e-100, f_rho(r_grid) * np.exp(-0.5*(z_grid/f_H(r_grid))**2))
 
         with open(path, "w") as f:
@@ -508,7 +531,7 @@ class Model():
         )
 
         for i in range(self.ac_grid.shape[0]):
-            f_T = interp1d(self.rc_grid_, self.T_gas_, fill_value="extrapolate")
+            f_T = interp1d(self.rc_grid_, self.T_gas_, fill_value="extrapolate", kind="linear")
             T_grid[..., i] = f_T(r_grid)
 
         with open(path, "w") as f:
