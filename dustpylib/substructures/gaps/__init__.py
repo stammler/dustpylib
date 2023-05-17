@@ -6,6 +6,6 @@ from dustpylib.substructures.gaps.gaps import duffell2020
 from dustpylib.substructures.gaps.gaps import kanagawa2017
 
 __all__ = [
-    "duffel2020",
+    "duffell2020",
     "kanagawa2017",
 ]
