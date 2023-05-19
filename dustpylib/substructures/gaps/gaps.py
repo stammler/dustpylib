@@ -26,9 +26,12 @@ def duffell2020(r, a, q, h, alpha0):
     # Mach number
     M = 1./h
 
+    # Add small value to avoid division by zero
+    qp = q + 1.e-100
+
     # qtilde from equation (18) has shape (Nr,)
     D = 7*M**1.5/alpha0**0.25
-    qtilde = q/(1+D**3*((r/a)**(1./6.)-1)**6)**(1./3.)
+    qtilde = qp/(1+D**3*((r/a)**(1./6.)-1)**6)**(1./3.)
 
     # delta from equation (9)
     # Note: there is a typo in the original publication
@@ -66,9 +69,6 @@ def kanagawa2017(r, a, q, h, alpha0):
         Pertubation of surface density due to planet
     """
 
-    # Unperturbed return value
-    ret = np.ones_like(r)
-
     # Distance to planet (normalized)
     dist = np.abs(r-a)/a
 
@@ -82,12 +82,9 @@ def kanagawa2017(r, a, q, h, alpha0):
     SigGap = 4 / Kp4 * dist - 0.32
     dr1 = (0.25*SigMin + 0.08) * Kp**0.25
     dr2 = 0.33 * Kp**0.25
-
     # Gap edges
-    mask1 = np.logical_and(dr1 < dist, dist < dr2)
-    ret = np.where(mask1, SigGap, ret)
+    ret = np.where((dr1<dist)&(dist<dr2), SigGap, 1.)
     # Gap center
-    mask2 = dist < dr1
-    ret = np.where(mask2, SigMin, ret)
+    ret = np.where(dist<dr1, SigMin, ret)
 
     return ret
