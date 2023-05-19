@@ -16,7 +16,7 @@ def refine_radial_local(ri, r0, num=3):
 
     Returns
     -------
-    ri_fine : array-like, (Nr+)
+    ri_fine : array-like, (Nr+,)
         Refined radial grid cell interfaces
     """
     # Break recursion
@@ -25,8 +25,9 @@ def refine_radial_local(ri, r0, num=3):
 
     # Closest index to location
     i0 = np.abs(ri-r0).argmin()
+    i0 = np.argmax(ri>r0)-1
     # Boundary indices of refinement region
-    il = np.maximum(0, i0-num)
+    il = np.maximum(0, i0-num+1)
     ir = np.minimum(i0+num, ri.shape[0]-1)
 
     # Left and right unmodified regions
