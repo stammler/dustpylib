@@ -828,7 +828,7 @@ def read_image(path):
 
     lam = image[6:6+Nlam]*1.e-4
 
-    if iformat == 1:
+    if iformat in [1, 2]:
         I = image[6+Nlam:].reshape(
             (Nlam, Ny, Nx)
         ).swapaxes(2, 0)
@@ -842,7 +842,7 @@ def read_image(path):
         U = image[:, 2].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
         V = image[:, 3].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
     else:
-        raise RuntimeError("Invalid file iformat: '{}'. Only '1' or '3' supported.".format(iformat))
+        raise RuntimeError("Invalid file iformat: '{}'. Only '1', '2', or '3' supported.".format(iformat))
 
     d = {
         "x": x,
