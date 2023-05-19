@@ -26,6 +26,7 @@ jobs:
     - name: Installing Numpy
       run: |
         pip install pip --upgrade
+        pip install wheel
         pip install numpy
     - name: Installing requirements
       run: |
