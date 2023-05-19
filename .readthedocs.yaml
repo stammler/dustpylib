@@ -18,7 +18,7 @@ build:
   tools:
     python: "3.10"
   apt_packages:
-    - gfortran
+    - gfortran-10
   jobs:
     pre_install:
       - pip install numpy
