@@ -17,14 +17,19 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest]
+        toolchain:
+          - {compiler: gcc, version: 11}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Setup GNU Fortran
-      uses: modflowpy/install-gfortran-action@v1
+    - name: Setup gfortran compiler
+      uses: awvwgk/setup-fortran@v1
+      with:
+        compiler: ${{ matrix.toolchain.compiler }}
+        version: ${{ matrix.toolchain.version }}
     - name: Installing requirements
       run: |
         pip install pip --upgrade
