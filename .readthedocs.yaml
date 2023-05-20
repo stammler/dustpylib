@@ -21,5 +21,6 @@ build:
     - gfortran-10
   jobs:
     pre_install:
+      - alias gfortran="gfortran-10"
       - pip install numpy
       - pip install -r docs/requirements.txt
