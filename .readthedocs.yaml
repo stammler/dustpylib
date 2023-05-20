@@ -18,9 +18,8 @@ build:
   tools:
     python: "3.10"
   apt_packages:
-    - gfortran-10
+    - gfortran
   jobs:
     pre_install:
-      - alias gfortran="gfortran-10"
       - pip install numpy
       - pip install -r docs/requirements.txt
