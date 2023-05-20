@@ -1,3 +1,5 @@
+name: joss_draft_pdf
+
 on: [push]
 
 jobs:
