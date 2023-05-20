@@ -1,9 +1,9 @@
 """
 This module can be used to create simple, axisymmetric ``RADMC-3D`` input files
-from ``DustPy`` models. It furthermore contains simple methods to read ``RADMC-3D``
-images and spectra and methods to inspect the model files. These are only
-meant for models created by this module. For more general models, use the
-``Radmc3dPy` module within ``RADMC-3D``.
+from ``DustPy`` models. It furthermore contains simple methods to read
+``RADMC-3D`` images and spectra and methods to inspect the model files. These
+are only meant for models created by this module. For more general models, use
+the ``Radmc3dPy` module within ``RADMC-3D``.
 """
 
 import dsharp_opac as do
@@ -19,9 +19,10 @@ from types import SimpleNamespace
 
 class Model():
     """
-    Main model class that can read in ``DustPy`` models and can create ``RADMC-3D`` input files.
-    Attributes with trailing underscore are imported from ``DustPy``, while the other attributes
-    will be used to create ``RADMC-3D`` input files.
+    Main model class that can read in ``DustPy`` models and can create
+    ``RADMC-3D`` input files. Attributes with trailing underscore are imported
+    from ``DustPy``, while the other attributes     will be used to create
+    ``RADMC-3D`` input files.
 
     Methods
     -------
@@ -30,14 +31,17 @@ class Model():
     read_spectrum :
         Reads ``RADMC_3d`` spectrum file
     write_files :
-        Writes all required ``RADMC-3D`` input files into the specified directory
+        Writes all required ``RADMC-3D`` input files into the
+        specified directory
     write_opacity_files :
-        Writes only the required ``RADMC-3D`` opacity into files into the specified directory
+        Writes only the required ``RADMC-3D`` opacity into files into the
+        specified directory
     """
 
     def __init__(self, sim, ignore_last=True):
         """
-        Class to create a simple axisymmetric ``RADMC-3D`` model from ``DustPy`` simulation data.
+        Class to create a simple axisymmetric ``RADMC-3D`` model from
+        ``DustPy`` simulation data.
 
         Parameters
         ----------
@@ -243,7 +247,8 @@ class Model():
 
     def _init_from_dustpy(self, sim):
         """
-        This function initializes the model from a ``DustPy`` simulation object.
+        This function initializes the model from a ``DustPy``
+        simulation object.
 
         Parameters
         ----------
@@ -479,17 +484,23 @@ class Model():
         z = self.H_dust_.flatten()
         xi = self.rc_grid_
         yi = self.ac_grid
-        H_grid_ = griddata((x, y), z, (xi[:, None], yi[None, :]), method="linear", rescale=True)
+        H_grid_ = griddata(
+            (x, y), z, (xi[:, None], yi[None, :]),
+            method="linear", rescale=True)
 
         for i in range(self.ac_grid.shape[0]):
             rho = np.where(
-                (self.a_dust_ >= self.ai_grid[i]) & (self.a_dust_ < self.ai_grid[i+1]),
+                (self.a_dust_ >= self.ai_grid[i])
+                & (self.a_dust_ < self.ai_grid[i+1]),
                 self.rho_dust_,
                 0.
             ).sum(-1)
-            f_H = interp1d(self.rc_grid_, H_grid_[:, i], fill_value="extrapolate", kind="linear")
-            f_rho = interp1d(self.rc_grid_, rho, fill_value="extrapolate", kind="linear")
-            rho_grid[..., i] = np.maximum(1.e-100, f_rho(r_grid) * np.exp(-0.5*(z_grid/f_H(r_grid))**2))
+            f_H = interp1d(self.rc_grid_, H_grid_[:, i],
+                           fill_value="extrapolate", kind="linear")
+            f_rho = interp1d(self.rc_grid_, rho,
+                             fill_value="extrapolate", kind="linear")
+            rho_grid[..., i] = np.maximum(
+                1.e-100, f_rho(r_grid) * np.exp(-0.5*(z_grid/f_H(r_grid))**2))
 
         with open(path, "w") as f:
             f.write("1\n")
@@ -531,7 +542,8 @@ class Model():
         )
 
         for i in range(self.ac_grid.shape[0]):
-            f_T = interp1d(self.rc_grid_, self.T_gas_, fill_value="extrapolate", kind="linear")
+            f_T = interp1d(self.rc_grid_, self.T_gas_,
+                           fill_value="extrapolate", kind="linear")
             T_grid[..., i] = f_T(r_grid)
 
         with open(path, "w") as f:
@@ -599,10 +611,13 @@ class Model():
             mix, rho_s = do.get_dsharp_mix()
         elif opacity == "ricci2010":
             print("Using Ricci mix. Please cite Ricci et al. (2010).")
-            mix, rho_s = do.get_ricci_mix(lmax=self.lam_grid[-1], extrapol=True)
+            mix, rho_s = do.get_ricci_mix(lmax=self.lam_grid[-1],
+                                          extrapol=True)
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
-        opac_dict = do.get_opacities(self.ac_grid, self.lam_grid, rho_s, mix, extrapolate_large_grains=True, n_angle=int((Nangle-1)/2+1))
+        opac_dict = do.get_opacities(self.ac_grid, self.lam_grid, rho_s, mix,
+                                     extrapolate_large_grains=True,
+                                     n_angle=int((Nangle-1)/2+1))
         zscat, _, k_sca, g = do.chop_forward_scattering(opac_dict)
         opac_dict["k_sca"] = k_sca
         opac_dict["g"] = g
@@ -610,7 +625,8 @@ class Model():
         print()
 
         for ia in range(Nspec):
-            filename = "dustkapscatmat_{}.inp".format("{:d}".format(ia).zfill(mag))
+            filename = "dustkapscatmat_{}.inp".format(
+                "{:d}".format(ia).zfill(mag))
             path = os.path.join(datadir, filename)
             print("Writing {}.....".format(path), end="")
             with open(path, "w") as f:
@@ -634,7 +650,8 @@ class Model():
                 for ilam in range(Nlam):
                     for iang in range(Nangle):
                         f.write(
-                            "{:.6e} {:.6e} {:.6e} {:.6e} {:.6e} {:.6e}\n".format(
+                            "{:.6e} {:.6e} {:.6e} {:.6e} {:.6e} {:.6e}\n"
+                            .format(
                                 zscat[ia, ilam, iang, 0],
                                 zscat[ia, ilam, iang, 1],
                                 zscat[ia, ilam, iang, 2],
@@ -648,9 +665,9 @@ class Model():
 
 def read_model(datadir=""):
     """
-    This functions reads the ``RADMC-3D`` model files and returns a namespace with the data.
-    It should only be used for models created by ``dustpylib``. For more complex models
-    use ``Radmc3dPy``.
+    This functions reads the ``RADMC-3D`` model files and returns a namespace
+    with the data. It should only be used for models created by ``dustpylib``.
+    For more complex models use ``Radmc3dPy``.
 
     Parameters
     ----------
@@ -676,9 +693,9 @@ def read_model(datadir=""):
 
 def _read_amr_grid_inp(datadir=""):
     """
-    This functions reads the ``RADMC-3D`` model files and returns a namespace with the grid.
-    It should only be used for models created by ``dustpylib``. For more complex models
-    use ``Radmc3dPy``.
+    This functions reads the ``RADMC-3D`` model files and returns a namespace
+    with the grid. It should only be used for models created by ``dustpylib``.
+    For more complex models use ``Radmc3dPy``.
 
     Parameters
     ----------
@@ -718,9 +735,9 @@ def _read_amr_grid_inp(datadir=""):
 
 def _read_dust_density_inp(datadir=""):
     """
-    This functions reads the ``RADMC-3D`` model files and returns the dust density.
-    It should only be used for models created by ``dustpylib``. For more complex models
-    use ``Radmc3dPy``.
+    This functions reads the ``RADMC-3D`` model files and returns the
+    dust density. It should only be used for models created by ``dustpylib``.
+    For more complex models use ``Radmc3dPy``.
 
     Parameters
     ----------
@@ -757,9 +774,9 @@ def _read_dust_density_inp(datadir=""):
 
 def _read_dust_temperature_dat(datadir=""):
     """
-    This functions reads the ``RADMC-3D`` model files and returns the dust temperature.
-    It should only be used for models created by ``dustpylib``. For more complex models
-    use ``Radmc3dPy``.
+    This functions reads the ``RADMC-3D`` model files and returns
+    the dust temperature. It should only be used for models created
+    by ``dustpylib``. For more complex models use ``Radmc3dPy``.
 
     Parameters
     ----------
@@ -796,8 +813,8 @@ def _read_dust_temperature_dat(datadir=""):
 
 def read_image(path):
     """
-    This functions reads an image file created by ``RADMC-3D`` and returns a dictionary
-    with the image data.
+    This functions reads an image file created by ``RADMC-3D`` and returns
+    a dictionary with the image data.
 
     Parameters
     ----------
@@ -829,29 +846,31 @@ def read_image(path):
     lam = image[6:6+Nlam]*1.e-4
 
     if iformat in [1, 2]:
-        I = image[6+Nlam:].reshape(
+        St_I = image[6+Nlam:].reshape(
             (Nlam, Ny, Nx)
         ).swapaxes(2, 0)
-        Q = np.zeros_like(I)
-        U = np.zeros_like(I)
-        V = np.zeros_like(I)
+        St_Q = np.zeros_like(St_I)
+        St_U = np.zeros_like(St_I)
+        St_V = np.zeros_like(St_I)
     elif iformat == 3:
         image = image[6+Nlam:].reshape((-1, 4))
-        I = image[:, 0].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
-        Q = image[:, 1].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
-        U = image[:, 2].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
-        V = image[:, 3].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
+        St_I = image[:, 0].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
+        St_Q = image[:, 1].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
+        St_U = image[:, 2].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
+        St_V = image[:, 3].reshape((Nlam, Ny, Nx)).swapaxes(2, 0)
     else:
-        raise RuntimeError("Invalid file iformat: '{}'. Only '1', '2', or '3' supported.".format(iformat))
+        raise RuntimeError(
+            "Invalid file iformat: '{}'. Only '1', '2', or '3' supported."
+            .format(iformat))
 
     d = {
         "x": x,
         "y": y,
         "lambda": lam,
-        "I": I,
-        "Q": Q,
-        "U": U,
-        "V": V,
+        "I": St_I,
+        "Q": St_Q,
+        "U": St_U,
+        "V": St_V,
     }
 
     return d
@@ -859,8 +878,8 @@ def read_image(path):
 
 def read_spectrum(path):
     """
-    This functions reads a spectrum file created by ``RADMC-3D`` and returns a dictionary
-    with the SED data.
+    This functions reads a spectrum file created by ``RADMC-3D`` and returns
+    a dictionary with the SED data.
 
     Parameters
     ----------

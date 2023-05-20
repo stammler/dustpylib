@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def duffell2020(r, a, q, h, alpha0):
     """
     Function calculates the planetary gap profile according Duffell (2020).
@@ -38,7 +39,7 @@ def duffell2020(r, a, q, h, alpha0):
     # (q/qw)**3 is added in both cases
     qnl = 1.04/M**3
     qw = 34. * qnl * np.sqrt(alpha0*M)
-    delta = np.where(qtilde>qnl, np.sqrt(qnl/qtilde), 1.) + (qtilde/qw)**3
+    delta = np.where(qtilde > qnl, np.sqrt(qnl/qtilde), 1.) + (qtilde/qw)**3
 
     # Gap shape
     ret = 1. / (1. + 0.45/(3.*np.pi) * qtilde**2 * M**5 * delta/alpha0)
@@ -48,7 +49,8 @@ def duffell2020(r, a, q, h, alpha0):
 
 def kanagawa2017(r, a, q, h, alpha0):
     """
-    Function calculates the planetary gap profile according Kanagawa et al. (2017).
+    Function calculates the planetary gap profile according
+    Kanagawa et al. (2017).
 
     Parameters
     ----------
@@ -83,8 +85,8 @@ def kanagawa2017(r, a, q, h, alpha0):
     dr1 = (0.25*SigMin + 0.08) * Kp**0.25
     dr2 = 0.33 * Kp**0.25
     # Gap edges
-    ret = np.where((dr1<dist)&(dist<dr2), SigGap, 1.)
+    ret = np.where((dr1 < dist) & (dist < dr2), SigGap, 1.)
     # Gap center
-    ret = np.where(dist<dr1, SigMin, ret)
+    ret = np.where(dist < dr1, SigMin, ret)
 
     return ret

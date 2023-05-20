@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def refine_radial_local(ri, r0, num=3):
     """
     Function refines the radial grid locally bysplitting grid cells
@@ -25,7 +26,7 @@ def refine_radial_local(ri, r0, num=3):
 
     # Closest index to location
     i0 = np.abs(ri-r0).argmin()
-    i0 = np.argmax(ri>r0)-1
+    i0 = np.argmax(ri > r0)-1
     # Boundary indices of refinement region
     il = np.maximum(0, i0-num+1)
     ir = np.minimum(i0+num, ri.shape[0]-1)

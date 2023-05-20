@@ -1,5 +1,6 @@
 """
-This package contains interfaces to radiative transfer codes from ``DustPy`` models.
+This package contains interfaces to radiative transfer codes
+from ``DustPy`` models.
 """
 
 from dustpylib.radtrans import radmc3d

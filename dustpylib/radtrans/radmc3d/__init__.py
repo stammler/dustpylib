@@ -1,5 +1,6 @@
 """
-This package contains an interface to create ``RADMC-3D`` input files from ``DustPy`` models.
+This package contains an interface to create ``RADMC-3D`` input files
+from ``DustPy`` models.
 """
 
 from dustpylib.radtrans.radmc3d.radmc3d import Model

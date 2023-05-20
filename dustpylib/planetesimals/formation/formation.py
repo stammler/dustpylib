@@ -1,6 +1,9 @@
 import numpy as np
 
-def drazkowska2016(OmegaK, rho_dust, rho_gas, Sigma_dust, St, p2g_crit=1., St_crit=0.01, zeta=0.01):
+
+def drazkowska2016(
+        OmegaK, rho_dust, rho_gas, Sigma_dust, St,
+        p2g_crit=1., St_crit=0.01, zeta=0.01):
     """
     Function calculates the dust source term due to planetesimal
     formation of Darzkowska et al. (2016).
@@ -31,9 +34,9 @@ def drazkowska2016(OmegaK, rho_dust, rho_gas, Sigma_dust, St, p2g_crit=1., St_cr
     S : array-like, (Nr, Nm)
         Dust source terms due to planetesimal formation
     """
-    mask = St>=St_crit
+    mask = St >= St_crit
     p2g_mid = np.where(mask, rho_dust, 0.).sum(-1)/rho_gas
-    trigger = np.where(p2g_mid>=p2g_crit, True, False)
+    trigger = np.where(p2g_mid >= p2g_crit, True, False)
 
     Sigma_pebbles = np.where(mask, Sigma_dust, 0.)
 
@@ -44,7 +47,9 @@ def drazkowska2016(OmegaK, rho_dust, rho_gas, Sigma_dust, St, p2g_crit=1., St_cr
     return S
 
 
-def miller2021(OmegaK, rho_dust, rho_gas, Sigma_dust, St, d2g_crit=1., n=0.03, zeta=0.1):
+def miller2021(
+        OmegaK, rho_dust, rho_gas, Sigma_dust, St,
+        d2g_crit=1., n=0.03, zeta=0.1):
     """
     Function calculates the dust source term due to planetesimal
     formation of Miller et al. (2021).
@@ -84,7 +89,9 @@ def miller2021(OmegaK, rho_dust, rho_gas, Sigma_dust, St, d2g_crit=1., n=0.03, z
     return S
 
 
-def schoonenberg2018(OmegaK, rho_dust, rho_gas, Sigma_dust, St, d2g_crit=1., zeta=0.1):
+def schoonenberg2018(
+        OmegaK, rho_dust, rho_gas, Sigma_dust, St,
+        d2g_crit=1., zeta=0.1):
     """
     Function calculates the dust source term due to planetesimal
     formation of Schoonenberg et al. (2018).
@@ -113,7 +120,7 @@ def schoonenberg2018(OmegaK, rho_dust, rho_gas, Sigma_dust, St, d2g_crit=1., zet
         Dust source terms due to planetesimal formation
     """
     d2g_mid = rho_dust.sum(-1)/rho_gas
-    trigger = np.where(d2g_mid>=d2g_crit, True, False)
+    trigger = np.where(d2g_mid >= d2g_crit, True, False)
 
     S = np.where(trigger[:, None], -zeta*Sigma_dust*St*OmegaK[:, None], 0.)
     S[0, :] = 0.

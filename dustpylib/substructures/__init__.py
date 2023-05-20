@@ -1,5 +1,6 @@
 """
-This package contains modules to create substructures in ``DustPy`` simulations.
+This package contains modules to create substructures in
+``DustPy`` simulations.
 """
 
 from dustpylib.substructures import gaps
