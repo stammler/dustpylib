@@ -1,5 +1,5 @@
 ---
-title: 'DustPyLib: A Library of Modifications and Extensions for DustPy'
+title: 'DustPyLib: A Library of DustPy Extensions'
 tags:
   - Python
 authors:
@@ -20,7 +20,7 @@ bibliography: paper.bib
 
 # Summary
 
-`DustPy` is a Python package for dust evolution inf protoplanetary disks [@stammler2022ApJ...935...35S]. It simulates the collisional growth of micrometer-sized dust particles to meter-sized boulders and eventually to planets in circumstellar gas and dust disks. `DustPy` is based on the `Simframe` framework for scientific simulations [@stammler2022JOSS....7.3882S] allowing the users to easily interchange and modify every aspect of the software.
+`DustPy` is a Python package for dust evolution inf protoplanetary disks [@stammler2022b]. It simulates the collisional growth of micrometer-sized dust particles to meter-sized boulders and eventually to planets in circumstellar gas and dust disks. `DustPy` is based on the `Simframe` framework for scientific simulations [@stammler2022a] allowing the users to easily interchange and modify every aspect of the software.
 
 The purpose of `DustPyLib` is to provide a library of `DustPy` modifications and extensions that users can easily import and use in their own `DustPy` setups. `DustPyLib` is meant to be a community project, where users can contribute their own customizations making them available for others to be used in their projects.
 
@@ -38,7 +38,7 @@ As of the time of this publication `DustPyLib` already contains some extensions 
 
 ## Radiative Transfer
 
-`DustPyLib` contains an interface to the Monte Carlo radiative transfer code RADMC-3D [@dullemond2012ascl.soft02015D]. The interface creates three-dimensional axis-symmetric disk models from `DustPy` simulations and produces RADMC-3D input files. Dust opacities are created with `dsharp_opac` [@birnstiel2018zndo...1495277B], which can produce two different dust opacities [@ricci2010A&A...512A..15R; @birnstiel2018ApJ...869L..45B]. Other custom opacities can be produces with `OpTool` [@dominik2021ascl.soft04010D].
+`DustPyLib` contains an interface to the Monte Carlo radiative transfer code RADMC-3D [@dullemond2012]. The interface creates three-dimensional axis-symmetric disk models from `DustPy` simulations and produces RADMC-3D input files. Dust opacities are created with `dsharp_opac` [@birnstiel2018b], which can produce two different dust opacities [@ricci2010; @birnstiel2018a]. Other custom opacities can be produces with `OpTool` [@dominik2021].
 
 An example of a radiative transfer calculation of a `DustPy` simulation of a Solar System analogue containing only the planets Jupiter and Saturn is shown in \autoref{fig:radmc3d}.
 
@@ -46,11 +46,11 @@ An example of a radiative transfer calculation of a `DustPy` simulation of a Sol
 
 ## Planetary Gaps
 
-Massive planets are exerting torque on the gas in protoplanetary disks and can open gaps in the gas disk. These gaps can be imposed on `DustPy` simulations by modifying the kinematic viscosity according the desired gap shapes. `DustPyLib` as of now contains two recipes for gap shapes created by planets [@kanagawa2017PASJ...69...97K; duffell2020ApJ...889...16D].
+Massive planets are exerting torque on the gas in protoplanetary disks and can open gaps in the gas disk. These gaps can be imposed on `DustPy` simulations by modifying the kinematic viscosity according the desired gap shapes. `DustPyLib` as of now contains two recipes for gap shapes created by planets [@kanagawa2017; duffell2020].
 
 ## Planetesimal Formation
 
-If dust particles are concentrated above a critical threshold, hydrodynamic instabilities can trigger gravitational collapse of dust clouds leading to the formation of planetesimals. `DustPyLib` so far contains three different flavors of implementing planetesimal formation into `DustPy` simulations [@drazkowska2016A&A...594A.105D; @schoonenberg2018A&A...620A.134S; @miller2021MNRAS.508.5638M].
+If dust particles are concentrated above a critical threshold, hydrodynamic instabilities can trigger gravitational collapse of dust clouds leading to the formation of planetesimals. `DustPyLib` so far contains three different flavors of implementing planetesimal formation into `DustPy` simulations [@drazkowska2016; @schoonenberg2018; @miller2021].
 
 ## Auxiliary Modules
 
