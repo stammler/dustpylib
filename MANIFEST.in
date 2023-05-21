@@ -8,3 +8,4 @@ include docs/source/*.rst
 include docs/source/*.py
 include docs/source/*.ipynb
 include docs/source/_static/*
+prunte *tests*
