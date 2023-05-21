@@ -1,4 +1,4 @@
-name: joss_draft_pdf
+name: JOSS Paper Draft
 
 on: [push]
 
