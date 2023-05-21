@@ -1,6 +1,6 @@
 """
 This module can be used to create simple, axisymmetric ``RADMC-3D`` input files
-from ``DustPy`` models. It furthermore contains simple methods to read
+from ``DustPyLib`` models. It furthermore contains simple methods to read
 ``RADMC-3D`` images and spectra and methods to inspect the model files. These
 are only meant for models created by this module. For more general models, use
 the ``Radmc3dPy` module within ``RADMC-3D``.
@@ -21,7 +21,7 @@ class Model():
     """
     Main model class that can read in ``DustPy`` models and can create
     ``RADMC-3D`` input files. Attributes with trailing underscore are imported
-    from ``DustPy``, while the other attributes     will be used to create
+    from ``DustPy``, while the other attributes will be used to create
     ``RADMC-3D`` input files.
 
     Methods
@@ -49,9 +49,10 @@ class Model():
             The ``DustPy`` model data. Can either be a ``Simulation`` object or
             a namespace returned from ``Writer.read.output()``.
         ignore_last : bool, default: True
-            If True, the outermost radial grid cell of DustPy will be ignored.
-            In the default model, the outermost gas grid cell is set to floor
-            value. This can induce unwanted effects on the RADMC3D model.
+            If True, the outermost radial grid cell of ``DustPy`` will be
+            ignored. In the default model, the outermost gas grid cell is set
+            to floor value. This can induce unwanted effects on the ``RADMC3D``
+            model.
         """
 
         self._ai_grid = None
@@ -666,7 +667,7 @@ class Model():
 def read_model(datadir=""):
     """
     This functions reads the ``RADMC-3D`` model files and returns a namespace
-    with the data. It should only be used for models created by ``dustpylib``.
+    with the data. It should only be used for models created by ``DustPyLib``.
     For more complex models use ``Radmc3dPy``.
 
     Parameters
@@ -694,7 +695,7 @@ def read_model(datadir=""):
 def _read_amr_grid_inp(datadir=""):
     """
     This functions reads the ``RADMC-3D`` model files and returns a namespace
-    with the grid. It should only be used for models created by ``dustpylib``.
+    with the grid. It should only be used for models created by ``DustPyLib``.
     For more complex models use ``Radmc3dPy``.
 
     Parameters
@@ -736,7 +737,7 @@ def _read_amr_grid_inp(datadir=""):
 def _read_dust_density_inp(datadir=""):
     """
     This functions reads the ``RADMC-3D`` model files and returns the
-    dust density. It should only be used for models created by ``dustpylib``.
+    dust density. It should only be used for models created by ``DustPyLib``.
     For more complex models use ``Radmc3dPy``.
 
     Parameters
@@ -776,7 +777,7 @@ def _read_dust_temperature_dat(datadir=""):
     """
     This functions reads the ``RADMC-3D`` model files and returns
     the dust temperature. It should only be used for models created
-    by ``dustpylib``. For more complex models use ``Radmc3dPy``.
+    by ``DustPyLib``. For more complex models use ``Radmc3dPy``.
 
     Parameters
     ----------
