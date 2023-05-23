@@ -22,7 +22,11 @@ bibliography: paper.bib
 
 # Summary
 
-`DustPy` is a Python package for dust evolution in protoplanetary disks [@stammler2022b]. It simulates the collisional growth of micrometer-sized dust particles to meter-sized boulders and eventually to planets in circumstellar gas and dust disks. `DustPy` is based on the `Simframe` framework for scientific simulations [@stammler2022a] allowing the users to easily interchange and modify every aspect of the software.
+`DustPy` is a Python package for dust evolution in protoplanetary disks [@stammler2022b]. It simulates the collisional growth of dust in gas and dust disks around young stellar objects from micrometer-sized particles to meter-sized boulders and eventually to planets in circumstellar gas and dust disks. Results of simulations can then be compared to observations of circumstellar disk to retrieve dust masses and size distributions linking observations to planet formation theories.
+
+# Statement of need
+
+Since `DustPy` is based on the `Simframe` framework for scientific simulations [@stammler2022a], it is rather simple to interchange and modify every aspect of the software. Numerous peer-review publications already made use interchangeability of `DustPy` modules investigating a variety of open questions of protoplanetary disk evolution. For example the formation of planetesimals in density enhancements [@stammler2019; @miller2021], the permeability of gaps opened by planets [@stammler23], the influence of dust particle size distributions on the gas ionization fraction and therefore on the magnetorotational instability [@delage2023], or the effect erosion on dust evolution on young protoplanetary disks [@xu2023].
 
 The purpose of `DustPyLib` is to provide a library of `DustPy` modifications and extensions that users can easily import and use in their own `DustPy` setups or which can help to reproduce previous results. `DustPyLib` is meant to be a community project, where users can contribute their own customizations making them available for others to be used in their own projects. In that sense it is similar to the `REBOUNDx` extension package [@tamayo2020] for the N-body solver `REBOUND` [@rein2012].
 
