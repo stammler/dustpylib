@@ -1,10 +1,10 @@
 import numpy as np
 
 
-from dustpylib.backreaction.functions_backreaction import BackreactionCoefficients, BackreactionCoefficients_VerticalStructure
-from dustpylib.backreaction.functions_backreaction import Backreaction_A, Backreaction_B, Backreaction_A_VerticalStructure, Backreaction_B_VerticalStructure
-from dustpylib.backreaction.functions_backreaction import vrad_dust_BackreactionVerticalStructure
-from dustpylib.backreaction.functions_backreaction import dustDiffusivity_Backreaction
+from dustpylib.dynamics.backreaction.functions_backreaction import BackreactionCoefficients, BackreactionCoefficients_VerticalStructure
+from dustpylib.dynamics.backreaction.functions_backreaction import Backreaction_A, Backreaction_B, Backreaction_A_VerticalStructure, Backreaction_B_VerticalStructure
+from dustpylib.dynamics.backreaction.functions_backreaction import vrad_dust_BackreactionVerticalStructure
+from dustpylib.dynamics.backreaction.functions_backreaction import dustDiffusivity_Backreaction
 
 ################################
 # Helper routine to add backreaction to your Simulation object in one line.
