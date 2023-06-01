@@ -4,12 +4,8 @@ The setup_backreaction(sim) function automatically implements all the required m
 """
 
 from dustpylib.dynamics.backreaction.functions_backreaction import BackreactionCoefficients
-from dustpylib.dynamics.backreaction.functions_backreaction import Backreaction_A, Backreaction_B
-
 from dustpylib.dynamics.backreaction.functions_backreaction import BackreactionCoefficients_VerticalStructure
-from dustpylib.dynamics.backreaction.functions_backreaction import Backreaction_A_VerticalStructure, Backreaction_B_VerticalStructure
 from dustpylib.dynamics.backreaction.functions_backreaction import vrad_dust_BackreactionVerticalStructure
-
 from dustpylib.dynamics.backreaction.functions_backreaction import dustDiffusivity_Backreaction
 
 from dustpylib.dynamics.backreaction.setup_backreaction import setup_backreaction
@@ -17,11 +13,7 @@ from dustpylib.dynamics.backreaction.setup_backreaction import setup_backreactio
 
 __all__ = [
     "BackreactionCoefficients",
-    "Backreaction_A",
-    "Backreaction_B",
     "BackreactionCoefficients_VerticalStructure",
-    "Backreaction_A_VerticalStructure",
-    "Backreaction_B_VerticalStructure",
     "vrad_dust_BackreactionVerticalStructure",
     "dustDiffusivity_Backreaction",
     "setup_backreaction"

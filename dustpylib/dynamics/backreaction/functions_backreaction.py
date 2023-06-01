@@ -9,12 +9,19 @@ import numpy as np
 # Compute backreaction coefficients AB assuming vertically uniform dust-to-gas ratio per species
 def BackreactionCoefficients(sim):
     '''
+    Updater of the dust.backreaction Group.
+
     Obtain the backreaction coefficients considering the contribution of each dust species.
     For more information check Garate et al. (2019), equations 23 - 26 in Appendix.
     This implementation does not consider the vertical structure.
     Hence, all the dust species and the gas feel the same backreaction.
 
-    Returns the backreaction coefficients are returned as a pair [A, B]
+    ------------------------------
+
+    Assigns the backreaction coefficients are returned to:
+    sim.dust.backreaction.A
+    sim.dust.backreaction.B
+    
     '''
     # Additional Parameters
     OmitLastCell = True # Set the last cell to the default values (A=1, B=0) for stability.
@@ -47,21 +54,9 @@ def BackreactionCoefficients(sim):
         A[-1] = 1.0
         B[-1] = 0.0
 
-    return np.array([A, B])
-
-#########################################################################################
-#
-# Update functions the individual backreaction coefficients.
-# We use computed the AB coefficients together to avoid repeating calculations
-#
-#########################################################################################
-
-# Update backreaction coefficients
-def Backreaction_A(sim):
-    return sim.dust.backreaction.AB[0]
-
-def Backreaction_B(sim):
-    return sim.dust.backreaction.AB[1]
+    # Assign the backreaction coefficients
+    sim.dust.backreaction.A = A
+    sim.dust.backreaction.B = B
 
 
 
@@ -80,11 +75,6 @@ def dustDiffusivity_Backreaction(sim):
     return dustDiffusivity(sim) / (1. + d2g_ratio[:, None])
 
 
-
-
-
-
-
 #########################################################################################
 #########################################################################################
 #
@@ -94,6 +84,8 @@ def dustDiffusivity_Backreaction(sim):
 #########################################################################################
 def BackreactionCoefficients_VerticalStructure(sim):
     '''
+    Updater of the dust.backreaction Group.
+
     Obtain the backreaction coefficients considering the vertical structure.
     For more information check Garate et al. (2019), equations 23 - 26 in Appendix.
 
@@ -101,7 +93,16 @@ def BackreactionCoefficients_VerticalStructure(sim):
     The final velocity is the mass flux vertical average at each location.
     For more information check Garate et al. (2019), equations 31 - 35 in Appendix.
 
-    Returns the backreaction coefficients as (Nm + 1) pairs, two for the gas, and two for each dust species [Ag, Bg, Ad[0:Nm], Bd[0:Nm]]
+    ------------------------------
+
+    This updater assigns:
+    - the backreaction coefficients used for the gas calculations
+    sim.dust.backreaction.A
+    sim.dust.backreaction.B
+
+    - the backreaction coefficients used for the dust calculations accounting for vertical settling
+    sim.dust.backreaction.A_vertical
+    sim.dust.backreaction.B_vertical
     '''
 
     Nr = sim.grid.Nr[0]
@@ -174,36 +175,15 @@ def BackreactionCoefficients_VerticalStructure(sim):
     Ad[Ad > 1.0] = 1.0
 
 
-    # Finally, we output the coefficients the Ag, Bg, Ad, Bd into a single array.
-    # The entry 0 corresponds to Ag (gas backreaction coefficient A)
-    # The entry 1 corresponds to Bg (gas backreaction coefficient B)
-    # The entry 2 : Nm + 1 corresponds to Ad traspose (dust backreaction coefficient A)
-    # The entry Nm + 2 : 2*Nm + 1 corresponds to Bd traspose (dust backreaction coefficient B)
+    # Assign the backreaction coefficients for the gas and dust calculations
+    sim.dust.backreaction.A = Ag            # Dimension (Nr)
+    sim.dust.backreaction.B = Bg            # Dimension (Nr)
 
-    backReactCoeff = np.ones((2 * (Nm + 1), Nr))
-    backReactCoeff[0] = Ag
-    backReactCoeff[1] = Bg
-    backReactCoeff[2 : Nm + 2] = Ad.T
-    backReactCoeff[Nm + 2 :] = Bd.T
-
-    return backReactCoeff
+    sim.dust.backreaction.A_vertical = Ad   # Dimension (Nr, Nm)
+    sim.dust.backreaction.B_vertical = Bd   # Dimension (Nr, Nm)
 
 
-#########################################################################################
-#
-# Update functions considering the dust vertical structure
-# Here we assign one pair of backreaction coefficients to each species.
 # We also need to ammend the functions for dust.v.rad, since they need a local-per-species value for gas.v.rad and dust.v.driftmax
-#
-#########################################################################################
-def Backreaction_A_VerticalStructure(sim):
-    Nm = sim.grid.Nm[0]
-    return sim.dust.backreaction.AB[2 : Nm + 2].T  # Shape (Nr, Nm)
-
-def Backreaction_B_VerticalStructure(sim):
-    Nm = sim.grid.Nm[0]
-    return sim.dust.backreaction.AB[Nm + 2 :].T    # Shape (Nr, Nm)
-
 def vrad_dust_BackreactionVerticalStructure(sim):
     St = sim.dust.St
 
