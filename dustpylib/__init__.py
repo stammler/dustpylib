@@ -7,6 +7,8 @@ from dustpylib import grid
 from dustpylib import planetesimals
 from dustpylib import radtrans
 from dustpylib import substructures
+from dustpylib import dynamics
+
 
 __version__ = "0.4.0"
 
@@ -15,4 +17,5 @@ __all__ = [
     "planetesimals",
     "radtrans",
     "substructures",
+    "dynamics",
 ]
