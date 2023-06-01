@@ -25,10 +25,17 @@ def setup_backreaction(sim, vertical_setup = False):
     print("Setting up the backreaction module.")
     print("Please cite the work of Garate(2019, 2020).")
 
+    # Set the backreaction coefficients with the standard setup
+    sim.dust.backreaction.updater = BackreactionCoefficients
+
     if vertical_setup:
         # Include additional back-reaction coefficients for the dust accounting for vertical settling
-        sim.dust.backreaction.addfield("A_vertical", np.ones_like(sim.dust.a) ,  description = "Backreaction Coefficient A, considering dust vertical settling")
-        sim.dust.backreaction.addfield("B_vertical", np.zeros_like(sim.dust.a),  description = "Backreaction Coefficient B, considering dust vertical settling")
+
+        sim.dust.backreaction.A.description = "Pull factor (gas), accounting for dust settling"
+        sim.dust.backreaction.B.description = "Push factor (gas), accounting for dust settling"
+
+        sim.dust.backreaction.addfield("A_dust_settling", np.ones_like(sim.dust.a) ,  description = "Pull factor (dust), accounting for dust settling")
+        sim.dust.backreaction.addfield("B_dust_settling", np.zeros_like(sim.dust.a),  description = "Push factor (dust), accounting for dust settling")
 
 
         # Instead of assigning an update order to the backreaction Group
@@ -37,10 +44,6 @@ def setup_backreaction(sim, vertical_setup = False):
 
         # Redefine the radial dust velocity to consider one pair of backreaction coefficients per dust species
         sim.dust.v.rad.updater = vrad_dust_BackreactionVerticalStructure
-
-    else:
-        # Set the backreaction coefficients with the standard setup
-        sim.dust.backreaction.updater = BackreactionCoefficients
 
 
     # Update the dust diffusivity to account for high dust-to-gas ratios

@@ -21,7 +21,7 @@ def BackreactionCoefficients(sim):
     Assigns the backreaction coefficients are returned to:
     sim.dust.backreaction.A
     sim.dust.backreaction.B
-    
+
     '''
     # Additional Parameters
     OmitLastCell = True # Set the last cell to the default values (A=1, B=0) for stability.
@@ -96,13 +96,13 @@ def BackreactionCoefficients_VerticalStructure(sim):
     ------------------------------
 
     This updater assigns:
-    - the backreaction coefficients used for the gas calculations
+    - the backreaction coefficients used for the gas calculations, accounting for dust vertical settling
     sim.dust.backreaction.A
     sim.dust.backreaction.B
 
-    - the backreaction coefficients used for the dust calculations accounting for vertical settling
-    sim.dust.backreaction.A_vertical
-    sim.dust.backreaction.B_vertical
+    - the backreaction coefficients used for the dust calculations, accounting for dust vertical settling
+    sim.dust.backreaction.A_dust_settling
+    sim.dust.backreaction.B_dust_settling
     '''
 
     Nr = sim.grid.Nr[0]
@@ -179,16 +179,16 @@ def BackreactionCoefficients_VerticalStructure(sim):
     sim.dust.backreaction.A = Ag            # Dimension (Nr)
     sim.dust.backreaction.B = Bg            # Dimension (Nr)
 
-    sim.dust.backreaction.A_vertical = Ad   # Dimension (Nr, Nm)
-    sim.dust.backreaction.B_vertical = Bd   # Dimension (Nr, Nm)
+    sim.dust.backreaction.A_dust_settling = Ad   # Dimension (Nr, Nm)
+    sim.dust.backreaction.B_dust_settling = Bd   # Dimension (Nr, Nm)
 
 
 # We also need to ammend the functions for dust.v.rad, since they need a local-per-species value for gas.v.rad and dust.v.driftmax
 def vrad_dust_BackreactionVerticalStructure(sim):
     St = sim.dust.St
 
-    A = sim.dust.backreaction.A_vertical
-    B = sim.dust.backreaction.B_vertical
+    A = sim.dust.backreaction.A_dust_settling
+    B = sim.dust.backreaction.B_dust_settling
 
     # Viscous velocity and pressure velocity
     vvisc = sim.gas.v.visc[:, None]
