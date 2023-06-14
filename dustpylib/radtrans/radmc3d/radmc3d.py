@@ -294,7 +294,7 @@ class Model():
         self.H_dust_ = sim.dust.H
         self.rho_dust_ = sim.dust.rho
 
-    def write_files(self, datadir=None, opacity=None):
+    def write_files(self, datadir=None, opacity=None, write_opacities=True):
         """
         Function writes all required ``RADMC-3D`` input files.
 
@@ -303,16 +303,22 @@ class Model():
         datadir : str, optional, default: None
             Data directory in which the files are written. None defaults to
             the datadir attribute of the parent class.
+        opacity : str, optional, default: None
+            Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
+            None defaults to 'birnstiel2018'.
+        write_opacities : booelan, optional, default: True
+            If False, does not compute nor write opacity files.
         """
         datadir = self.datadir if datadir is None else datadir
-        opacity = opacity or self.opacity or 'birnstiel2018'
+        opacity = opacity or self.opacity or "birnstiel2018"
         self._write_radmc3d_inp(datadir=datadir)
         self._write_stars_inp(datadir=datadir)
         self._write_wavelength_micron_inp(datadir=datadir)
         self._write_amr_grid_inp(datadir=datadir)
         self._write_dust_density_inp(datadir=datadir)
         self._write_dust_temperature_dat(datadir=datadir)
-        self.write_opacity_files(datadir=datadir, opacity=opacity)
+        if write_opacities:
+            self.write_opacity_files(datadir=datadir, opacity=opacity)
 
     def write_opacity_files(self, datadir=None, opacity=None):
         """
