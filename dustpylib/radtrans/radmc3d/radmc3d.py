@@ -8,6 +8,7 @@ the ``Radmc3dPy` module within ``RADMC-3D``.
 
 import dsharp_opac as do
 from dustpy import Simulation
+from dustpy import constants as c
 from dustpylib.grid.refinement import refine_radial_local
 import numpy as np
 import os
@@ -92,8 +93,8 @@ class Model():
         #: Dust scale heights array in cm from ``DustPy``
         self.H_dust_ = None
 
-        #: Dust midplane density profile in g/cm³ from ``DustPy``
-        self.rho_dust_ = None
+        #: Dust surface density profile in g/cm² from ``DustPy``
+        self.Sigma_dust_ = None
 
         #: Directory to store the ``RADMC-3D input files``
         self.datadir = "radmc3d"
@@ -122,9 +123,8 @@ class Model():
             self.T_gas_ = self.T_gas_[:-1]
             self.a_dust_ = self.a_dust_[:-1, :]
             self.H_dust_ = self.H_dust_[:-1, :]
-            self.rho_dust_ = self.rho_dust_[:-1, :]
+            self.Sigma_dust_ = self.Sigma_dust_[:-1, :]
 
-        #: Radial grid cell interfaces for ``RADMC-3D`` model
         self.ri_grid = refine_radial_local(self.ri_grid_, 0., num=3)
 
         lam1 = np.geomspace(0.1e-4, 7.e-4, 20, endpoint=False)
@@ -132,12 +132,14 @@ class Model():
         lam3 = np.geomspace(25.e-4, 1., 30, endpoint=True)
         self.lam_grid = np.concatenate([lam1, lam2, lam3])
 
-        Ntheta = 64
-        theta_threshold = 0.25*np.pi
-        theta1 = np.linspace(0., theta_threshold, 5, endpoint=False)
-        theta2 = np.linspace(theta_threshold,
-                             0.5*np.pi, Ntheta+1-theta1.shape[0])
-        theta_up = np.concatenate([theta1, theta2])
+        linthresh = 1.e-3
+        Ntheta = 128
+        Ntheta_lin = 32
+        thetai_lin = np.pi/2 \
+            - np.linspace(0, linthresh, Ntheta_lin, endpoint=False)
+        thetai_log = np.pi/2 \
+            - np.geomspace(linthresh, np.pi/2, Ntheta+1-Ntheta_lin)
+        theta_up = np.hstack((thetai_lin, thetai_log))[::-1]
         theta_down = (np.pi - theta_up[:-1])[::-1]
         self.thetai_grid = np.concatenate([theta_up, theta_down])
 
@@ -268,7 +270,7 @@ class Model():
 
         self.a_dust_ = sim.dust.a
         self.H_dust_ = sim.dust.H
-        self.rho_dust_ = sim.dust.rho
+        self.Sigma_dust_ = sim.dust.Sigma
 
     def _init_from_namespace(self, sim):
         """
@@ -292,7 +294,7 @@ class Model():
 
         self.a_dust_ = sim.dust.a
         self.H_dust_ = sim.dust.H
-        self.rho_dust_ = sim.dust.rho
+        self.Sigma_dust_ = sim.dust.Sigma
 
     def write_files(self, datadir=None, opacity=None, write_opacities=True):
         """
@@ -319,6 +321,7 @@ class Model():
         self._write_dust_temperature_dat(datadir=datadir)
         if write_opacities:
             self.write_opacity_files(datadir=datadir, opacity=opacity)
+        self._write_metadata(datadir=datadir)
 
     def write_opacity_files(self, datadir=None, opacity=None):
         """
@@ -478,6 +481,29 @@ class Model():
         r_grid = R_grid * np.sin(theta_grid)
         z_grid = R_grid * np.cos(theta_grid)
 
+        # Binning surface density onto new size bins
+        Sigma = np.empty(
+            (self.rc_grid_.shape[0],
+             self.ac_grid.shape[0])
+        )
+        for i in range(Sigma.shape[1]):
+            mask = (
+                (self.a_dust_ >= self.ai_grid[i]) &
+                (self.a_dust_ < self.ai_grid[i+1])
+            )
+            Sigma[:, i] = np.where(mask, self.Sigma_dust_, 0.).sum(-1)
+
+        # Interpolate dust scale heights on RADMC-3D size grid
+        x = np.repeat(self.rc_grid_, self.a_dust_.shape[1])
+        y = self.a_dust_.flatten()
+        z = self.H_dust_.flatten()
+        xi = self.rc_grid_
+        yi = self.ac_grid
+        H = griddata(
+            (x, y), z, (xi[:, None], yi[None, :]),
+            method="linear", rescale=True)
+
+        rho = Sigma / (np.sqrt(2.*np.pi)*H)
         rho_grid = np.empty(
             (self.rc_grid.shape[0],
              self.thetac_grid.shape[0],
@@ -485,29 +511,32 @@ class Model():
              self.ac_grid.shape[0])
         )
 
-        # Interpolate dust scale heights on size grid
-        x = np.repeat(self.rc_grid_, self.a_dust_.shape[1])
-        y = self.a_dust_.flatten()
-        z = self.H_dust_.flatten()
-        xi = self.rc_grid_
-        yi = self.ac_grid
-        H_grid_ = griddata(
-            (x, y), z, (xi[:, None], yi[None, :]),
-            method="linear", rescale=True)
-
         for i in range(self.ac_grid.shape[0]):
-            rho = np.where(
-                (self.a_dust_ >= self.ai_grid[i])
-                & (self.a_dust_ < self.ai_grid[i+1]),
-                self.rho_dust_,
-                0.
-            ).sum(-1)
-            f_H = interp1d(self.rc_grid_, H_grid_[:, i],
+            f_H = interp1d(self.rc_grid_, H[..., i],
                            fill_value="extrapolate", kind="linear")
-            f_rho = interp1d(self.rc_grid_, rho,
+            f_rho = interp1d(self.rc_grid_, rho[..., i],
                              fill_value="extrapolate", kind="linear")
             rho_grid[..., i] = np.maximum(
                 1.e-100, f_rho(r_grid) * np.exp(-0.5*(z_grid/f_H(r_grid))**2))
+
+        # Check for mass conservation
+        # Mass from DustPy import
+        M_dp = (np.pi * (self.ri_grid_[1:]**2-self.ri_grid_[:-1]**2)
+                * self.Sigma_dust_[..., :].sum(-1)).sum()
+        # Computing volume elements
+        Ri_grid, thetai_grid, phii_grid = np.meshgrid(
+            self.ri_grid, self.thetai_grid, self.phii_grid,
+            indexing="ij"
+        )
+        dR = np.diff(Ri_grid, axis=0)[:, :-1, :-1]
+        dtheta = np.diff(thetai_grid, axis=1)[:-1, :, :-1]
+        dphi = np.diff(phii_grid, axis=2)[:-1, :-1, :]
+        dV = R_grid**2 * np.sin(theta_grid) * dR * dtheta * dphi
+        # Getting Mass
+        M = (rho_grid.sum(-1)*dV).sum()
+        if np.isclose(self.thetai_grid[-1], 0.5*np.pi):
+            M *= 2.
+        dM = np.abs(M-M_dp)/M_dp
 
         with open(path, "w") as f:
             f.write("1\n")
@@ -516,6 +545,15 @@ class Model():
             for val in rho_grid.ravel(order="F"):
                 f.write("{:.6e}\n".format(val))
         print("done.")
+
+        if dM > 1.e-3:
+            print()
+            print("    Warning: The total dust mass in the DustPy setup")
+            print("             and the RADMC-3D model differ.")
+            print("        M_dustpy  = {:.3e} M_sun".format(M_dp/c.M_sun))
+            print("        M_radmc3d = {:.3e} M_sun".format(M/c.M_sun))
+            print("    If this is not intended, please refine the grids.")
+            print()
 
     def _write_dust_temperature_dat(self, datadir=None):
         """
@@ -599,10 +637,13 @@ class Model():
         datadir : str, optional, default: None
             Data directory in which the files are written. None defaults to
             the datadir attribute of the parent class.
+        opacity : str, optional, default: None
+            Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
+            None defaults to 'birnstiel2018'.
         """
 
         datadir = self.datadir if datadir is None else datadir
-        opacity = opacity or self.opacity or 'birnstiel2018'
+        opacity = opacity or self.opacity or "birnstiel2018"
         Path(datadir).mkdir(parents=True, exist_ok=True)
 
         Nangle = 181
@@ -669,6 +710,35 @@ class Model():
                         )
             print("done.")
 
+    def _write_metadata(self, datadir=None):
+        """
+        Function writes the 'metadata*.npz' file.
+        It is not required for ``RADMC-3D`` model, but it contains
+        additional data such as particle size bins used in the setup.
+
+        Parameters
+        ----------
+        datadir : str, optional, default: None
+            Data directory in which the files are written. None defaults to
+            the datadir attribute of the parent class.
+        """
+
+        filename = "metadata.npz"
+        datadir = self.datadir if datadir is None else datadir
+        Path(datadir).mkdir(parents=True, exist_ok=True)
+
+        path = os.path.join(datadir, filename)
+
+        print("Writing {}.....".format(path), end="")
+
+        np.savez(
+            path,
+            a=self.ac_grid,
+            ai=self.ai_grid,
+        )
+
+        print("done.")
+
 
 def read_model(datadir=""):
     """
@@ -694,6 +764,16 @@ def read_model(datadir=""):
     path = os.path.join(datadir, "dust_temperature.dat")
     if os.path.isfile(path):
         d["T"] = _read_dust_temperature_dat(datadir=datadir)
+
+    path = os.path.join(datadir, "metadata.npz")
+    if os.path.isfile(path):
+        metadata = np.load(path)
+        d["grid"].a = metadata["a"]
+        d["grid"].ai = metadata["ai"]
+        if d["grid"].a.shape[0] != d["rho"].shape[-1]:
+            s = "Warning: " \
+                "The meta data file does not match the RADMC-3D setup."
+            print(s)
 
     return SimpleNamespace(**d)
 
