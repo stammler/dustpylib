@@ -16,6 +16,7 @@ Installation
    :maxdepth: 2
    :caption: Contents
 
+   dynamics
    grid
    planetesimals
    radtrans
