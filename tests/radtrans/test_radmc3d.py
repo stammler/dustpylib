@@ -15,10 +15,10 @@ def test_import_from_simulation():
 
     assert np.allclose(rt.ri_grid_, sim.grid.ri[:-1])
     assert np.allclose(rt.rc_grid_, sim.grid.r[:-1])
-    
+
     assert np.allclose(rt.a_dust_, sim.dust.a[:-1, :])
     assert np.allclose(rt.H_dust_, sim.dust.H[:-1, :])
-    assert np.allclose(rt.rho_dust_, sim.dust.rho[:-1, :])
+    assert np.allclose(rt.Sigma_dust_, sim.dust.Sigma[:-1, :])
     assert np.allclose(rt.T_gas_, sim.gas.T[:-1])
 
     assert np.allclose(rt.M_star_, sim.star.M)
@@ -29,10 +29,10 @@ def test_import_from_simulation():
 
     assert np.allclose(rt.ri_grid_, sim.grid.ri)
     assert np.allclose(rt.rc_grid_, sim.grid.r)
-    
+
     assert np.allclose(rt.a_dust_, sim.dust.a)
     assert np.allclose(rt.H_dust_, sim.dust.H)
-    assert np.allclose(rt.rho_dust_, sim.dust.rho)
+    assert np.allclose(rt.Sigma_dust_, sim.dust.Sigma)
     assert np.allclose(rt.T_gas_, sim.gas.T)
 
     assert np.allclose(rt.M_star_, sim.star.M)
@@ -53,10 +53,10 @@ def test_import_from_file():
 
     assert np.allclose(rt.ri_grid_, sim.grid.ri[:-1])
     assert np.allclose(rt.rc_grid_, sim.grid.r[:-1])
-    
+
     assert np.allclose(rt.a_dust_, sim.dust.a[:-1, :])
     assert np.allclose(rt.H_dust_, sim.dust.H[:-1, :])
-    assert np.allclose(rt.rho_dust_, sim.dust.rho[:-1, :])
+    assert np.allclose(rt.Sigma_dust_, sim.dust.Sigma[:-1, :])
     assert np.allclose(rt.T_gas_, sim.gas.T[:-1])
 
     assert np.allclose(rt.M_star_, sim.star.M)
@@ -67,10 +67,10 @@ def test_import_from_file():
 
     assert np.allclose(rt.ri_grid_, sim.grid.ri)
     assert np.allclose(rt.rc_grid_, sim.grid.r)
-    
+
     assert np.allclose(rt.a_dust_, sim.dust.a)
     assert np.allclose(rt.H_dust_, sim.dust.H)
-    assert np.allclose(rt.rho_dust_, sim.dust.rho)
+    assert np.allclose(rt.Sigma_dust_, sim.dust.Sigma)
     assert np.allclose(rt.T_gas_, sim.gas.T)
 
     assert np.allclose(rt.M_star_, sim.star.M)
@@ -84,7 +84,7 @@ def test_import_from_unknown():
 
 
 def test_derived_data():
-    
+
     sim = Simulation()
     sim.initialize()
 
@@ -100,11 +100,13 @@ def test_derived_data():
 
     assert rt.thetai_grid[0] == 0.
     assert rt.thetai_grid[-1] == np.pi
-    assert np.allclose(rt.thetac_grid, 0.5*(rt.thetai_grid[1:] + rt.thetai_grid[:-1]))
+    assert np.allclose(rt.thetac_grid, 0.5 *
+                       (rt.thetai_grid[1:] + rt.thetai_grid[:-1]))
 
     assert rt.phii_grid[0] == 0.
     assert rt.phii_grid[-1] == 2.*np.pi
-    assert np.allclose(rt.phic_grid, 0.5*(rt.phii_grid[1:] + rt.phii_grid[:-1]))
+    assert np.allclose(rt.phic_grid, 0.5 *
+                       (rt.phii_grid[1:] + rt.phii_grid[:-1]))
 
     with pytest.raises(RuntimeError):
         rt.ac_grid = 1.
@@ -228,7 +230,8 @@ def test_read_image_iformat3():
     for il in range(Nlam):
         for iy in range(Ny):
             for ix in range(Nx):
-                lines.append("{:e} {:e} {:e} {:e}".format(img[ix, iy, 0, il], img[ix, iy, 1, il], img[ix, iy, 2, il], img[ix, iy, 3, il]))
+                lines.append("{:e} {:e} {:e} {:e}".format(
+                    img[ix, iy, 0, il], img[ix, iy, 1, il], img[ix, iy, 2, il], img[ix, iy, 3, il]))
         lines.append("")
 
     # Addinge line seperator
@@ -312,3 +315,29 @@ def test_read_spectrum():
     spectrum = radmc3d.read_spectrum(path)
     assert np.allclose(spectrum["lambda"], lam)
     assert np.allclose(spectrum["flux"], F)
+
+
+def test_mass_conservation_failure():
+    sim = Simulation()
+    sim.initialize()
+    rt = radmc3d.Model(sim)
+    rt.thetai_grid = np.linspace(0., 0.5*np.pi, 10)
+    rt.write_files(write_opacities=False)
+
+
+def test_smooth_opacities():
+    sim = Simulation()
+    sim.initialize()
+    rt = radmc3d.Model(sim)
+    rt.ai_grid = np.linspace(1.e4, 1.e5, 3)
+    rt.write_opacity_files(smooth_opacities=True)
+
+
+def test_metadata_mismatch():
+    sim = Simulation()
+    sim.initialize()
+    rt = radmc3d.Model(sim)
+    rt.write_files(write_opacities=False)
+    rt.ai_grid = rt.ai_grid[:5]
+    rt._write_metadata()
+    radmc3d.read_model(datadir=rt.datadir)

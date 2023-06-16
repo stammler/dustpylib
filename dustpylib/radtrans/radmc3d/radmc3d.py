@@ -296,7 +296,12 @@ class Model():
         self.H_dust_ = sim.dust.H
         self.Sigma_dust_ = sim.dust.Sigma
 
-    def write_files(self, datadir=None, opacity=None, write_opacities=True):
+    def write_files(
+            self,
+            datadir=None,
+            write_opacities=True,
+            opacity=None,
+            smooth_opacities=False):
         """
         Function writes all required ``RADMC-3D`` input files.
 
@@ -305,11 +310,14 @@ class Model():
         datadir : str, optional, default: None
             Data directory in which the files are written. None defaults to
             the datadir attribute of the parent class.
+        write_opacities : booelan, optional, default: True
+            If False, does not compute nor write opacity files.
         opacity : str, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
-        write_opacities : booelan, optional, default: True
-            If False, does not compute nor write opacity files.
+        smooth_opacities : bool, optional, default: False
+            Smooth the opacities by averaging over multiple particle sizes.
+            This slows down the computation.
         """
         datadir = self.datadir if datadir is None else datadir
         opacity = opacity or self.opacity or "birnstiel2018"
@@ -320,10 +328,15 @@ class Model():
         self._write_dust_density_inp(datadir=datadir)
         self._write_dust_temperature_dat(datadir=datadir)
         if write_opacities:
-            self.write_opacity_files(datadir=datadir, opacity=opacity)
+            self.write_opacity_files(
+                datadir=datadir,
+                opacity=opacity,
+                smooth_opacities=smooth_opacities
+            )
         self._write_metadata(datadir=datadir)
 
-    def write_opacity_files(self, datadir=None, opacity=None):
+    def write_opacity_files(
+            self, datadir=None, opacity=None, smooth_opacities=False):
         """
         Function writes the required opacity files.
 
@@ -332,11 +345,21 @@ class Model():
         datadir : str, optional, default: None
             Data directory in which the files are written. None defaults to
             the datadir attribute of the parent class.
+        opacity : str, optional, default: None
+            Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
+            None defaults to 'birnstiel2018'.
+        smooth_opacities : bool, optional, default: False
+            Smooth the opacities by averaging over multiple particle sizes.
+            This slows down the computation.
         """
         datadir = self.datadir if datadir is None else datadir
         opacity = self.opacity if opacity is None else opacity
         self._write_dustopac_inp(datadir=datadir)
-        self._write_dustkapscatmat_inp(datadir=datadir, opacity=opacity)
+        self._write_dustkapscatmat_inp(
+            datadir=datadir,
+            opacity=opacity,
+            smooth_opacities=smooth_opacities
+        )
 
     def _write_radmc3d_inp(self, datadir=None):
         """
@@ -450,11 +473,11 @@ class Model():
                 )
             )
             for val in self.ri_grid:
-                f.write("{:.6e}\n".format(val))
+                f.write("{:.12e}\n".format(val))
             for val in self.thetai_grid:
-                f.write("{:.6e}\n".format(val))
+                f.write("{:.12e}\n".format(val))
             for val in self.phii_grid:
-                f.write("{:.6e}\n".format(val))
+                f.write("{:.12e}\n".format(val))
         print("done.")
 
     def _write_dust_density_inp(self, datadir=None):
@@ -628,7 +651,9 @@ class Model():
                 f.write("{}".format(i).zfill(mag)+"\n")
         print("done.")
 
-    def _write_dustkapscatmat_inp(self, datadir=None, opacity=None):
+    def _write_dustkapscatmat_inp(
+            self,
+            datadir=None, opacity=None, smooth_opacities=False):
         """
         Function writes the 'dustkapscatmat_*.inp' input files.
 
@@ -640,6 +665,9 @@ class Model():
         opacity : str, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
+        smooth_opacities : bool, optional, default: False
+            Smooth the opacities by averaging over multiple particle sizes.
+            This slows down the computation.
         """
 
         datadir = self.datadir if datadir is None else datadir
@@ -663,9 +691,16 @@ class Model():
                                           extrapol=True)
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
-        opac_dict = do.get_opacities(self.ac_grid, self.lam_grid, rho_s, mix,
-                                     extrapolate_large_grains=True,
-                                     n_angle=int((Nangle-1)/2+1))
+        if smooth_opacities:
+            opac_dict = do.get_smooth_opacities(self.ac_grid, self.lam_grid,
+                                                rho_s, mix,
+                                                extrapolate_large_grains=True,
+                                                n_angle=int((Nangle-1)/2+1))
+        else:
+            opac_dict = do.get_opacities(self.ac_grid, self.lam_grid,
+                                         rho_s, mix,
+                                         extrapolate_large_grains=True,
+                                         n_angle=int((Nangle-1)/2+1))
         zscat, _, k_sca, g = do.chop_forward_scattering(opac_dict)
         opac_dict["k_sca"] = k_sca
         opac_dict["g"] = g
@@ -709,6 +744,7 @@ class Model():
                             )
                         )
             print("done.")
+        print()
 
     def _write_metadata(self, datadir=None):
         """
@@ -813,8 +849,11 @@ def _read_amr_grid_inp(datadir=""):
 
     d = {
         "r": rc_grid,
+        "ri": ri_grid,
         "theta": thetac_grid,
-        "phi": phic_grid
+        "thetai": thetai_grid,
+        "phi": phic_grid,
+        "phii": phii_grid,
     }
 
     return SimpleNamespace(**d)
