@@ -1,5 +1,5 @@
 """
-This package contains modules about planetesimals.
+This package contains modules about dynamical extensions.
 """
 
 from dustpylib.dynamics import backreaction

@@ -1,3 +1,4 @@
+from dustpy.std.dust import D as dustDiffusivity
 import numpy as np
 
 #########################################################################################
@@ -5,6 +6,7 @@ import numpy as np
 # Backreaction Coefficients (simplified)
 #
 #########################################################################################
+
 
 # Compute backreaction coefficients AB assuming vertically uniform dust-to-gas ratio per species
 def BackreactionCoefficients(sim):
@@ -24,16 +26,16 @@ def BackreactionCoefficients(sim):
 
     '''
     # Additional Parameters
-    OmitLastCell = True # Set the last cell to the default values (A=1, B=0) for stability.
-
+    # Set the last cell to the default values (A=1, B=0) for stability.
+    OmitLastCell = True
 
     # Gas and Dust surface densities
     Sigma_g = sim.gas.Sigma
     Sigma_d = sim.dust.Sigma
 
-    d2g_ratio = Sigma_d / Sigma_g[:, None]  # Dust-to-Gas ratio (of each dust species)
+    # Dust-to-Gas ratio (of each dust species)
+    d2g_ratio = Sigma_d / Sigma_g[:, None]
     St = sim.dust.St                        # Stokes number
-
 
     # X, Y integrals (at each radius).
     factor_xy = 1.0 + np.square(St)
@@ -59,13 +61,12 @@ def BackreactionCoefficients(sim):
     sim.dust.backreaction.B = B
 
 
-
 #########################################################################################
 #
 # Damped diffusivity by the dust-to-gas ratio
 #
 #########################################################################################
-from dustpy.std.dust import D as dustDiffusivity
+
 
 def dustDiffusivity_Backreaction(sim):
     '''
@@ -107,10 +108,13 @@ def BackreactionCoefficients_VerticalStructure(sim):
 
     Nr = sim.grid.Nr[0]
     Nm = sim.grid.Nm[0]
-    Nz = 300                # Number of grid points for the vertical grid (locally defined)
-    zmin = 1.e-5            # Height of the first vertical gridcell (after the midplane). In Gas Scale Heights
+    # Number of grid points for the vertical grid (locally defined)
+    Nz = 300
+    # Height of the first vertical gridcell (after the midplane). In Gas Scale Heights
+    zmin = 1.e-5
     zmax = 10.0             # Height of the last vertical gridcell. In Gas Scale Heights
-    OmitLastCell = True     # Set the last cell to the default values (A=1, B=0) for stability.
+    # Set the last cell to the default values (A=1, B=0) for stability.
+    OmitLastCell = True
 
     # Gas and dust scale heights
     h_g = sim.gas.Hp
@@ -123,27 +127,27 @@ def BackreactionCoefficients_VerticalStructure(sim):
     # Stokes number
     St = sim.dust.St[:, :, None]
 
-
     # The vertical grid. Notice is defined locally.
-    z = np.concatenate(([0.0], np.logspace(np.log10(zmin), np.log10(zmax), Nz-1, 10.)))[None, :] * h_g[ : , None] #dim: nr, nz
+    z = np.concatenate(([0.0], np.logspace(np.log10(zmin), np.log10(
+        zmax), Nz-1, 10.)))[None, :] * h_g[:, None]  # dim: nr, nz
 
     # Vertical distribution for the gas and the dust
-    exp_z_g = np.exp(-z**2. / (2.0 * h_g[:, None]**2.0))  #nr, nz
-    exp_z_d = np.exp(-z[:, None, :]**2. / (2.0 * h_d[:, :, None]**2.0)) #nr, nm, nz
+    exp_z_g = np.exp(-z**2. / (2.0 * h_g[:, None]**2.0))  # nr, nz
+    exp_z_d = np.exp(-z[:, None, :]**2. /
+                     (2.0 * h_d[:, :, None]**2.0))  # nr, nm, nz
 
     # Dust-to-Gas ratio at each radius, for every mass bin, at every height (nr, nm, nz)
-    d2g_ratio = (rho_dust_midplane * exp_z_d) / (rho_gas_midplane * exp_z_g)[:, None, :]
-
-
+    d2g_ratio = (rho_dust_midplane * exp_z_d) / \
+        (rho_gas_midplane * exp_z_g)[:, None, :]
 
     # X, Y integral argument (at each radius and height) (nr, nm, nz).
     factor_xy = 1.0 + np.square(St)
-    integral_X = (1.0 / factor_xy) *  d2g_ratio
-    integral_Y = (St / factor_xy) *  d2g_ratio
+    integral_X = (1.0 / factor_xy) * d2g_ratio
+    integral_Y = (St / factor_xy) * d2g_ratio
 
     # Integral result X, Y obtained by summing over the mass axis (nr, nz)
-    X = np.sum(integral_X,axis=1)
-    Y = np.sum(integral_Y,axis=1)
+    X = np.sum(integral_X, axis=1)
+    Y = np.sum(integral_Y, axis=1)
 
     # Backreaction Coefficients A, B (nr, nz).
     factor_AB = np.square(Y) + np.square(1.0 + X)
@@ -160,20 +164,21 @@ def BackreactionCoefficients_VerticalStructure(sim):
 
     # Integrate over the vertical axis for each dust species structure
     # Ad, Bd have dimension (nr, nm)
-    Ad = np.trapz(A_rz[:, None, :] * exp_z_d, z[:, None, :], axis=2) * np.sqrt(2. / np.pi) / h_d
-    Bd = np.trapz(B_rz[:, None, :] * exp_z_d, z[:, None, :], axis=2) * np.sqrt(2. / np.pi) / h_d
+    Ad = np.trapz(A_rz[:, None, :] * exp_z_d, z[:, None, :],
+                  axis=2) * np.sqrt(2. / np.pi) / h_d
+    Bd = np.trapz(B_rz[:, None, :] * exp_z_d, z[:, None, :],
+                  axis=2) * np.sqrt(2. / np.pi) / h_d
 
     if OmitLastCell:
         Ag[-1] = 1.0
         Bg[-1] = 0.0
-        Ad[-1, : ] = 1.0
-        Bd[-1, : ] = 0.0
+        Ad[-1, :] = 1.0
+        Bd[-1, :] = 0.0
 
     # With the default parameters the integral slightly overestimates the coefficients.
     # For this reason is a good idea to the A coefficient to its maximum value of 1.0
     Ag[Ag > 1.0] = 1.0
     Ad[Ad > 1.0] = 1.0
-
 
     # Assign the backreaction coefficients for the gas and dust calculations
     sim.dust.backreaction.A = Ag            # Dimension (Nr)
@@ -195,7 +200,7 @@ def vrad_dust_BackreactionVerticalStructure(sim):
     vpres = (sim.gas.eta * sim.grid.r * sim.grid.OmegaK)[:, None]
 
     # Radial gas velocity and the maximum drift velocity, following (Garate et al., 2020. Eqs. 14, 15)
-    vgas_rad =  A * vvisc + 2. * B * vpres
+    vgas_rad = A * vvisc + 2. * B * vpres
     vdrift_max = 0.5 * B * vvisc - A * vpres
 
     return (vgas_rad + 2. * vdrift_max * St) / (1. + St**2.)
