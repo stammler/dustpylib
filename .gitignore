@@ -135,6 +135,7 @@ dmypy.json
 *.dat
 *.inp
 *.out
+*.npz
 
 # Unnecessary directories/files from documentation
 api/
