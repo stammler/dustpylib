@@ -662,7 +662,7 @@ class Model():
         datadir : str, optional, default: None
             Data directory in which the files are written. None defaults to
             the datadir attribute of the parent class.
-        opacity : str, optional, default: None
+        opacity : str or `dharp_opac.diel_const`, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
         smooth_opacities : bool, optional, default: False
@@ -689,6 +689,12 @@ class Model():
             print("Using Ricci mix. Please cite Ricci et al. (2010).")
             mix, rho_s = do.get_ricci_mix(lmax=self.lam_grid[-1],
                                           extrapol=True)
+        elif isinstance(opacity, do.diel_const):
+            mix = opacity
+            if hasattr(opacity, 'rho') and opacity.rho is not None:
+                rho_s = opacity.rho
+            else:
+                raise ValueError('opacity needs to have the attribute rho (material density) set')
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
         if smooth_opacities:
