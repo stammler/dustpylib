@@ -29,7 +29,7 @@ setup(
                   "Documentation": "https://dustpylib.rtfd.io/"
                   },
 
-    author="Sebastian Stammler, Tilman Birnstiel",
+    author="Sebastian Stammler, Matias, Garate, Tilman Birnstiel",
     author_email="sebastian.stammler@gmail.com",
     maintainer="Sebastian Stammler",
 

@@ -505,7 +505,7 @@ class Model():
         z_grid = R_grid * np.cos(theta_grid)
 
         # Binning surface density onto new size bins
-        Sigma = np.empty(
+        Sigma = np.zeros(
             (self.rc_grid_.shape[0],
              self.ac_grid.shape[0])
         )
@@ -524,7 +524,7 @@ class Model():
         yi = self.ac_grid
         H = griddata(
             (x, y), z, (xi[:, None], yi[None, :]),
-            method="linear", rescale=True)
+            method="linear", rescale=True, fill_value=1.)
 
         rho = Sigma / (np.sqrt(2.*np.pi)*H)
         rho_grid = np.empty(

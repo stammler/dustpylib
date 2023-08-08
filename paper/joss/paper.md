@@ -8,6 +8,9 @@ authors:
   - name: Sebastian M. Stammler^[corresponding author]
     orcid: 0000-0002-1589-1796
     affiliation: 1
+  - name: Matías Gárate
+    orcid: 0000-0001-6802-834X
+    affiliation: 3
   - name: Tilman Birnstiel
     orcid: 0000-0002-1899-8783
     affiliation: 1, 2
@@ -16,6 +19,8 @@ affiliations:
     index: 1
   - name: Exzellenzcluster ORIGINS, Boltzmannstr. 2, D-85748 Garching, Germany
     index: 2
+  - name: Max-Planck-Institut für Astronomie, Königstuhl 17, 69117 Heidelberg, Germany
+    index : 3
 date: 20 May 2023
 bibliography: paper.bib
 ---

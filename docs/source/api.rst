@@ -4,6 +4,12 @@ Module Reference
 .. automodapi:: dustpylib
     :no-inheritance-diagram:
 
+.. automodapi:: dustpylib.dynamics
+    :no-inheritance-diagram:
+
+.. automodapi:: dustpylib.dynamics.backreaction
+    :no-inheritance-diagram:
+
 .. automodapi:: dustpylib.grid
     :no-inheritance-diagram:
 

@@ -14,7 +14,7 @@ from dustpylib.dynamics.backreaction.setup_backreaction import setup_backreactio
 __all__ = [
     "BackreactionCoefficients",
     "BackreactionCoefficients_VerticalStructure",
-    "vrad_dust_BackreactionVerticalStructure",
     "dustDiffusivity_Backreaction",
-    "setup_backreaction"
+    "setup_backreaction",
+    "vrad_dust_BackreactionVerticalStructure",
 ]
