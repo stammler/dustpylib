@@ -338,7 +338,7 @@ def test_smooth_opacities():
     sim.initialize()
     rt = radmc3d.Model(sim)
     rt.ai_grid = np.linspace(1.e4, 1.e5, 3)
-    rt.write_opacity_files(smooth_opacities=True)
+    rt.write_opacity_files(smoothing=True)
 
 
 def test_metadata_mismatch():
