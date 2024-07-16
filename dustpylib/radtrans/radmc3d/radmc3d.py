@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 from scipy.interpolate import griddata
 from scipy.interpolate import interp1d
+from scipy.interpolate import RegularGridInterpolator
 from types import SimpleNamespace
 
 
@@ -301,7 +302,7 @@ class Model():
             datadir=None,
             write_opacities=True,
             opacity=None,
-            smooth_opacities=False):
+            smoothing=False):
         """
         Function writes all required ``RADMC-3D`` input files.
 
@@ -315,7 +316,7 @@ class Model():
         opacity : str, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
-        smooth_opacities : bool, optional, default: False
+        smoothing : bool, optional, default: False
             Smooth the opacities by averaging over multiple particle sizes.
             This slows down the computation.
         """
@@ -331,12 +332,12 @@ class Model():
             self.write_opacity_files(
                 datadir=datadir,
                 opacity=opacity,
-                smooth_opacities=smooth_opacities
+                smoothing=smoothing
             )
         self._write_metadata(datadir=datadir)
 
     def write_opacity_files(
-            self, datadir=None, opacity=None, smooth_opacities=False):
+            self, datadir=None, opacity=None, smoothing=False):
         """
         Function writes the required opacity files.
 
@@ -348,7 +349,7 @@ class Model():
         opacity : str, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
-        smooth_opacities : bool, optional, default: False
+        smoothing : bool, optional, default: False
             Smooth the opacities by averaging over multiple particle sizes.
             This slows down the computation.
         """
@@ -358,7 +359,7 @@ class Model():
         self._write_dustkapscatmat_inp(
             datadir=datadir,
             opacity=opacity,
-            smooth_opacities=smooth_opacities
+            smoothing=smoothing
         )
 
     def _write_radmc3d_inp(self, datadir=None):
@@ -653,7 +654,7 @@ class Model():
 
     def _write_dustkapscatmat_inp(
             self,
-            datadir=None, opacity=None, smooth_opacities=False):
+            datadir=None, opacity=None, smoothing=False):
         """
         Function writes the 'dustkapscatmat_*.inp' input files.
 
@@ -665,7 +666,7 @@ class Model():
         opacity : str, optional, default: None
             Opacity model to be used. Either 'birnstiel2018' or 'ricci2010'.
             None defaults to 'birnstiel2018'.
-        smooth_opacities : bool, optional, default: False
+        smoothing : bool, optional, default: False
             Smooth the opacities by averaging over multiple particle sizes.
             This slows down the computation.
         """
@@ -682,6 +683,8 @@ class Model():
         print()
         print("Computing opacities...")
         print("Using dsharp_opac. Please cite Birnstiel et al. (2018).")
+
+        # Selecting the opacity model
         if opacity == "birnstiel2018":
             print("Using DSHARP mix. Please cite Birnstiel et al. (2018).")
             mix, rho_s = do.get_dsharp_mix()
@@ -691,22 +694,69 @@ class Model():
                                           extrapol=True)
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
-        if smooth_opacities:
-            opac_dict = do.get_smooth_opacities(self.ac_grid, self.lam_grid,
-                                                rho_s, mix,
-                                                extrapolate_large_grains=True,
-                                                n_angle=int((Nangle-1)/2+1))
+
+        # When smoothing is True the opacities are computed on a finer grid
+        if smoothing:
+            amin = np.minimum(self.a_dust_.min(), self.ai_grid[0])
+            amax = np.maximum(self.a_dust_.max(), self.ai_grid[-1])
+            Na = np.maximum(4*self.ac_grid.shape[0], self.a_dust_.shape[1])
+            a_opac = np.geomspace(amin, amax, Na)
         else:
-            opac_dict = do.get_opacities(self.ac_grid, self.lam_grid,
-                                         rho_s, mix,
-                                         extrapolate_large_grains=True,
-                                         n_angle=int((Nangle-1)/2+1))
+            a_opac = self.ac_grid
+
+        # Computing the opacities
+        opac_dict = do.get_opacities(
+            a_opac, self.lam_grid,
+            rho_s, mix,
+            extrapolate_large_grains=True,
+            n_angle=int((Nangle-1)/2+1)
+        )
+
+        # When smoothing is True several size bins are averaged into
+        # the actual RADMC-3D model bins
+        if smoothing:
+            k_abs = np.empty((self.ac_grid.shape[0], self.lam_grid.shape[0]))
+            k_sca = np.empty((self.ac_grid.shape[0], self.lam_grid.shape[0]))
+            g_sca = np.empty((self.ac_grid.shape[0], self.lam_grid.shape[0]))
+            S1 = np.empty(
+                (self.ac_grid.shape[0], self.lam_grid.shape[0], Nangle),
+                dtype=complex)
+            S2 = np.empty(
+                (self.ac_grid.shape[0], self.lam_grid.shape[0], Nangle),
+                dtype=complex)
+            for i in range(self.ac_grid.shape[0]):
+                mask = (a_opac >= self.ai_grid[i]) & (
+                    a_opac < self.ai_grid[i+1])
+                # This is equivalent to weighting the opacities with an MRN
+                # size distribution of n(a) \protp a^{-3.5}
+                sqrta = np.sqrt(a_opac[mask])
+                sqrta_sum = sqrta.sum()
+                k_abs[i, :] = (sqrta[:, None] * opac_dict["k_abs"]
+                               [mask, :]).mean(0) / sqrta_sum
+                k_sca[i, :] = (sqrta[:, None] * opac_dict["k_sca"]
+                               [mask, :]).mean(0) / sqrta_sum
+                g_sca[i, :] = (sqrta[:, None] * opac_dict["g"]
+                               [mask, :]).mean(0) / sqrta_sum
+                S1[i, ...] = (sqrta[:, None, None] * opac_dict["S1"]
+                              [mask, ...]).mean(0) / sqrta_sum
+                S2[i, ...] = (sqrta[:, None, None] * opac_dict["S2"]
+                              [mask, ...]).mean(0) / sqrta_sum
+            opac_dict["k_abs"] = k_abs
+            opac_dict["k_sca"] = k_sca
+            opac_dict["g"] = g_sca
+            opac_dict["S1"] = S1
+            opac_dict["S2"] = S2
+            opac_dict["a"] = self.ac_grid
+
+        # Making sure that the scattering phase functions are
+        # properly normalized.
         zscat, _, k_sca, g = do.chop_forward_scattering(opac_dict)
         opac_dict["k_sca"] = k_sca
         opac_dict["g"] = g
         opac_dict["zscat"] = zscat
         print()
 
+        # Writing the files
         for ia in range(Nspec):
             filename = "dustkapscatmat_{}.inp".format(
                 "{:d}".format(ia).zfill(mag))
