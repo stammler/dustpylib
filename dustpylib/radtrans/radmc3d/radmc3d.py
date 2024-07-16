@@ -15,7 +15,6 @@ import os
 from pathlib import Path
 from scipy.interpolate import griddata
 from scipy.interpolate import interp1d
-from scipy.interpolate import RegularGridInterpolator
 from types import SimpleNamespace
 
 
@@ -110,10 +109,8 @@ class Model():
             "istar_sphere": 1,
         }
 
-        if isinstance(sim, Simulation):
-            self._init_from_dustpy(sim)
-        elif isinstance(sim, SimpleNamespace):
-            self._init_from_namespace(sim)
+        if isinstance(sim, Simulation) or isinstance(sim, SimpleNamespace):
+            self._init_from_object(sim)
         else:
             raise RuntimeError("Unknown data type of 'sim'.")
 
@@ -249,10 +246,11 @@ class Model():
     def phic_grid(self, value):
         raise RuntimeError("Do not set this manually.")
 
-    def _init_from_dustpy(self, sim):
+    def _init_from_object(self, sim):
         """
-        This function initializes the model from a ``DustPy``
-        simulation object.
+        This function initializes the model from a either ``DustPy``
+        simulation object or a namespace produced from the Reader
+        class.
 
         Parameters
         ----------
@@ -263,30 +261,6 @@ class Model():
         self.M_star_ = sim.star.M
         self.R_star_ = sim.star.R
         self.T_star_ = sim.star.T
-
-        self.rc_grid_ = sim.grid.r
-        self.ri_grid_ = sim.grid.ri
-
-        self.T_gas_ = sim.gas.T
-
-        self.a_dust_ = sim.dust.a
-        self.H_dust_ = sim.dust.H
-        self.Sigma_dust_ = sim.dust.Sigma
-
-    def _init_from_namespace(self, sim):
-        """
-        This function inizializes the model from a namespace as returned by
-        ``Writer.read.output()`` method.
-
-        Parameters
-        ----------
-        sim : SimpleNamespace
-            Namespace with DustPy data
-        """
-
-        self.M_star_ = sim.star.M[0]
-        self.R_star_ = sim.star.R[0]
-        self.T_star_ = sim.star.T[0]
 
         self.rc_grid_ = sim.grid.r
         self.ri_grid_ = sim.grid.ri
@@ -697,7 +671,8 @@ class Model():
             if hasattr(opacity, 'rho') and opacity.rho is not None:
                 rho_s = opacity.rho
             else:
-                raise ValueError('opacity needs to have the attribute rho (material density) set')
+                raise ValueError(
+                    'opacity needs to have the attribute rho (material density) set')
         else:
             raise RuntimeError("Unknown opacity '{}'".format(opacity))
 

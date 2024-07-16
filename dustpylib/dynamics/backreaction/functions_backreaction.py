@@ -106,8 +106,8 @@ def BackreactionCoefficients_VerticalStructure(sim):
     sim.dust.backreaction.B_dust_settling
     '''
 
-    Nr = sim.grid.Nr[0]
-    Nm = sim.grid.Nm[0]
+    Nr = sim.grid.Nr
+    Nm = sim.grid.Nm
     # Number of grid points for the vertical grid (locally defined)
     Nz = 300
     # Height of the first vertical gridcell (after the midplane). In Gas Scale Heights
