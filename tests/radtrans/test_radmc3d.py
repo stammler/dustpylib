@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pytest
 from simframe.io import writers
+import dsharp_opac as do
 
 
 def test_import_from_simulation():
@@ -156,6 +157,13 @@ def test_write_opacities():
     rt.ai_grid = np.array([rt.ai_grid[0], rt.ai_grid[-1]])
 
     rt.write_opacity_files(opacity="ricci2010")
+
+    mix = do.diel_henning('olivine')
+    rt.write_opacity_files(opacity=mix)
+    del mix.rho
+    with pytest.raises(ValueError):
+        rt.write_opacity_files(opacity=mix)
+
     with pytest.raises(RuntimeError):
         rt.write_opacity_files(opacity="_")
 
