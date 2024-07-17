@@ -33,10 +33,9 @@ jobs:
     - name: Installing requirements
       run: |
         pip install pip --upgrade
-        pip install wheel
+        pip install wheel setuptools
         pip install numpy numba
         pip install flake8 pytest
-        pip install meson-python ninja
         pip install .
     - name: Lint with flake8
       run: |
