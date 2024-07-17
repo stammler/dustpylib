@@ -9,8 +9,10 @@ from dustpylib import planetesimals
 from dustpylib import radtrans
 from dustpylib import substructures
 
+from importlib import metadata as _md
 
-__version__ = "0.5.0"
+__name__ = 'simframe'
+__version__ = _md.version('simframe')
 
 __all__ = [
     "dynamics",

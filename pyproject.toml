@@ -1,0 +1,49 @@
+[build-system]
+build-backend = 'mesonpy'
+requires = ['meson-python', 'numpy']
+
+[project]
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Education',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: Astronomy',
+    'Topic :: Scientific/Engineering :: Physics',
+    'Topic :: Scientific/Engineering :: Visualization',
+]
+name = 'dustpylib'
+version = '0.5.0'
+description = 'Library of DustPy extensions'
+readme = { file = 'README.md', content-type = 'text/markdown' }
+keywords = ['science', 'physics', 'mathematics', 'visualization']
+authors = [
+    { name = 'Sebastian Stammler', email = 'sebastian.stammler@gmail.com' },
+    { name = 'Til Birnstiel', email = 'til.birnstiel@lmu.de' },
+    { name = 'Matías Garaté' },
+]
+maintainers = [
+    { name = 'Sebastian Stammler', email = 'sebastian.stammler@gmail.com' },
+    { name = 'Tilman Birnstiel', email = 'til.birnstiel@lmu.de' },
+]
+license = { file = 'LICENSE' }
+dependencies = [
+    'astropy',
+    'dsharp_opac',
+    'dustpy',
+    'matplotlib',
+    'numpy',
+    'scipy',
+    'simframe',
+]
+
+[project.urls]
+Repository = 'https://github.com/stammler/dustpylib/'
+Documentation = 'https://dustpylib.readthedocs.io/'
