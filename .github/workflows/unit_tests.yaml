@@ -36,7 +36,7 @@ jobs:
         pip install wheel
         pip install numpy numba
         pip install flake8 pytest
-        pip install meson-python
+        pip install meson-python ninja
         pip install -e .
     - name: Lint with flake8
       run: |
