@@ -37,7 +37,7 @@ jobs:
         pip install numpy numba
         pip install flake8 pytest
         pip install meson-python ninja
-        pip install -e .
+        pip install .
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
