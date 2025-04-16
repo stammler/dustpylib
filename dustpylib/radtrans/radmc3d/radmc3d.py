@@ -258,9 +258,9 @@ class Model():
             DustPy simulation frame
         """
 
-        self.M_star_ = sim.star.M
-        self.R_star_ = sim.star.R
-        self.T_star_ = sim.star.T
+        self.M_star_ = sim.star.M.squeeze()
+        self.R_star_ = sim.star.R.squeeze()
+        self.T_star_ = sim.star.T.squeeze()
 
         self.rc_grid_ = sim.grid.r
         self.ri_grid_ = sim.grid.ri
