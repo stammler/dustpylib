@@ -159,14 +159,14 @@ def BackreactionCoefficients_VerticalStructure(sim):
 
     # Integrate over the vertical axis for the gas structure
     # Ag, Bg have dimension (nr)
-    Ag = np.trapz(A_rz * exp_z_g, z, axis=1) * np.sqrt(2. / np.pi) / h_g
-    Bg = np.trapz(B_rz * exp_z_g, z, axis=1) * np.sqrt(2. / np.pi) / h_g
+    Ag = np.trapezoid(A_rz * exp_z_g, z, axis=1) * np.sqrt(2. / np.pi) / h_g
+    Bg = np.trapezoid(B_rz * exp_z_g, z, axis=1) * np.sqrt(2. / np.pi) / h_g
 
     # Integrate over the vertical axis for each dust species structure
     # Ad, Bd have dimension (nr, nm)
-    Ad = np.trapz(A_rz[:, None, :] * exp_z_d, z[:, None, :],
+    Ad = np.trapezoid(A_rz[:, None, :] * exp_z_d, z[:, None, :],
                   axis=2) * np.sqrt(2. / np.pi) / h_d
-    Bd = np.trapz(B_rz[:, None, :] * exp_z_d, z[:, None, :],
+    Bd = np.trapezoid(B_rz[:, None, :] * exp_z_d, z[:, None, :],
                   axis=2) * np.sqrt(2. / np.pi) / h_d
 
     if OmitLastCell:
