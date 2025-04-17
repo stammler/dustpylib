@@ -8,3 +8,4 @@ The ``dustpylib.radtrans`` submodule contains interfaces to radiative transfer c
    :caption: Contents
 
    radmc3d
+   slab
