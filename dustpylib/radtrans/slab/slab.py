@@ -206,8 +206,12 @@ class Opacity(object):
 
         self._interp_k_abs = RegularGridInterpolator(
             (np.log10(self._lam), np.log10(self._a)), np.log10(self._k_abs).T, **kwargs)
-        self._interp_k_sca = RegularGridInterpolator(
-            (np.log10(self._lam), np.log10(self._a)), np.log10(self._k_sca).T, **kwargs)
+        if self._k_sca is not None:
+            self._interp_k_sca = RegularGridInterpolator(
+                (np.log10(self._lam), np.log10(self._a)), np.log10(self._k_sca).T, **kwargs)
+        else:
+            self._interp_k_sca = None
+
         if self._g is not None:
             kwargs['method'] = 'nearest'
             self._interp_g = RegularGridInterpolator(
@@ -227,29 +231,28 @@ class Opacity(object):
             iformat = np.fromfile(f, count=1, sep=' ', dtype=int).squeeze()[()]
             nlam = np.fromfile(f, count=1, sep=' ', dtype=int).squeeze()[()]
             data = np.loadtxt(f, dtype=float)
-            lam = data[:, 0] * 1e-4
-            if nlam != len(lam):
-                warnings.warn(
-                    'number of wavelength does not match the number of data rows')
-            if iformat > 0:
-                kabs = data[:, 1]
-            else:
-                kabs = None
-            if iformat > 1:
-                ksca = data[:, 2]
-            else:
-                ksca = None
-            if iformat > 2:
-                gsca = data[:, 3]
-            else:
-                gsca = None
-
+            self._lam = data[:, 0] * 1e-4
             self._a = [1e0]  # arbitrary, but needed for the interpolation
             self._rho_s = None
-            self._lam = lam
-            self._k_abs = kabs
-            self._k_sca = ksca
-            self._g = gsca
+
+            if nlam != len(self._lam):
+                warnings.warn(
+                    'number of wavelength does not match the number ' + 
+                    'of data rows. Will still use all rows')
+                nlam = len(self._lam)
+            if iformat > 0:
+                self._k_abs = data[:, 1].reshape(1, nlam)
+            else:
+                raise ValueError('iformat needs to be larger than 0')
+            if iformat > 1:
+                self._k_sca = data[:, 2].reshape(1, nlam)
+            else:
+                self._k_sca = None
+            if iformat > 2:
+                self._g = data[:, 3].reshape(1, nlam)
+            else:
+                self._g = None
+
 
     def _check_input(self, a, lam):
         """Checks if the input is asking for extrapolation in a reasonable range
@@ -295,10 +298,16 @@ class Opacity(object):
         k_abs, k_sca : arrays
             absorption and scattering opacities, each of shape (len(a), len(lam))
         """
+        out_shape = (*a.shape, *lam.shape)
+        a = a.ravel()
+        lam = lam.ravel()
         self._check_input(a, lam)
-        return \
-            10.**self._interp_k_abs(tuple(np.meshgrid(np.log10(lam), np.log10(a)))), \
-            10.**self._interp_k_sca(tuple(np.meshgrid(np.log10(lam), np.log10(a)))),
+        k_abs = 10.**self._interp_k_abs(tuple(np.meshgrid(np.log10(lam), np.log10(a))))
+        if self._interp_k_sca is not None:
+            k_sca = 10.**self._interp_k_sca(tuple(np.meshgrid(np.log10(lam), np.log10(a))))
+        else:
+            k_sca = np.zeros_like(k_abs)
+        return  k_abs.reshape(out_shape), k_sca.reshape(out_shape)
 
     def get_g(self, a, lam):
         """
@@ -319,11 +328,14 @@ class Opacity(object):
         g : arrays
             asymmetry parameter, array of shape (len(a), len(lam))
         """
+        out_shape = (*a.shape, *lam.shape)
+        a = a.ravel()
+        lam = lam.ravel()
         if self._g is None:
-            return np.zeros([len(np.array(a, ndmin=1)), len(np.array(lam, ndmin=1))]).squeeze()
+            return np.zeros(out_shape).squeeze()
         else:
             self._check_input(a, lam)
-            return self._interp_g(tuple(np.meshgrid(np.log10(lam), np.log10(a))))
+            return self._interp_g(tuple(np.meshgrid(np.log10(lam), np.log10(a)))).reshape(out_shape)
 
     def get_k_ext_eff(self, a, lam):
         """
@@ -354,7 +366,7 @@ class Opacity(object):
         return k_ext_eff
 
 
-def get_observables(r, sig_da, T, a, lam, opacity, scattering=True, inc=0.0,
+def get_observables(r, sig_da, T, a, lam, opacity: Opacity, scattering=True, inc=0.0,
                     distance=140 * pc, flux_fraction=0.68):
     """
     Calculates the radial profiles of the (vertical) optical depth and the intensity
@@ -420,7 +432,12 @@ def get_observables(r, sig_da, T, a, lam, opacity, scattering=True, inc=0.0,
     # Make sure wavelengths is one-dimensional
     lam = np.array(lam, ndmin=1)
 
+    nr, na = sig_da.shape
+    nlam = len(lam)
+
     # Get opacities at our wavelength and particle sizes
+    # this should return k_a, k_s of shape (Nr, Na, Nlam) or (Nr, Nlam)
+    # same for k_ext and g below
     k_a, k_s = opacity.get_opacities(a, lam)
     if scattering:
         g = opacity.get_g(a, lam)
@@ -430,28 +447,31 @@ def get_observables(r, sig_da, T, a, lam, opacity, scattering=True, inc=0.0,
         k_ext = k_a
 
     # Frequency and Planck function at every radius
+    # this should be shape (nr, nlam)
     freq = c_light / lam
     B_nu = bplanck(freq[None, :], T[:, None])
 
     # Optical depth
+    # sig_da should be shape (nr, na)
+    # k_ext should be shape (na, nlam), (nr, na, nlam)
     tau = np.minimum(
-        100., (sig_da[..., None] * k_ext[None, ...]).sum(axis=1) / np.cos(inc))
+        100., (sig_da[..., None] * k_ext.reshape(-1, na, nlam)).sum(axis=1) / np.cos(inc))
 
     # Mean opacities and intensity
     if scattering:
-        k_a_mean = (sig_da[..., None] * k_a[None, ...]
+        k_a_mean = (sig_da[..., None] * k_a.reshape(-1, na, nlam)
                     ).sum(axis=1) / sig_d_tot[..., None]
-        k_s_mean = (sig_da[..., None] * k_se[None, ...]
+        k_s_mean = (sig_da[..., None] * k_se.reshape(-1, na, nlam)
                     ).sum(axis=1) / sig_d_tot[..., None]
         eps_avg = k_a_mean / (k_a_mean + k_s_mean)
-        I_nu = B_nu * I_over_B_EB(tau, eps_avg)
+        I_nu = B_nu * I_over_B_EB(tau, eps_avg)  # (nr, nlam)
     else:
         dummy = np.where(tau > 1e-15, (1.0-np.exp(-tau)), tau)
         I_nu = B_nu * dummy
 
-    # Fluxes
-    flux = np.cos(inc) / distance**2 * cumtrapz(2.*np.pi *
-                                                r[:, None]*I_nu, x=r, axis=0, initial=0)
+    # Fluxes (nr, nlam)
+    flux = np.cos(inc) / distance**2 * cumtrapz(
+        2. * np.pi * r[:, None] * I_nu, x=r, axis=0, initial=0)
     flux_t = flux[-1, :] / 1.e-23
 
     # Intensity in Jy per arcsec
@@ -550,17 +570,18 @@ def get_all_observables(data, opacity, lam, **kwargs):
         data = reader.read.all()
 
     if isinstance(data, SimpleNamespace):
-        if 'sig_d' in data.__dict__:
+        if 'sig_da' in data.__dict__:
             # this assumes that data contains these specific entries
             # which have time as first index
 
-            n_t = data.sig_d.shape[0]
+            n_t = data.sig_da.shape[0]
 
             # loop over times to make a list of observables
             obs = []
             for it in range(n_t):
 
                 obs += [
+                    
                     get_observables(
                         data.r,
                         data.sig_da[it],
@@ -580,7 +601,7 @@ def get_all_observables(data, opacity, lam, **kwargs):
 
             obs = []
             for it in range(n_t):
-                if n_t > 1:
+                if data.dust.Sigma.ndim == 3:
                     sli = np.s_[it, ...]
                 obs += [
                     get_observables(
