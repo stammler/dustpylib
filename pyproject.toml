@@ -20,7 +20,7 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Visualization',
 ]
 name = 'dustpylib'
-version = '0.6.0'
+version = '0.7.0'
 description = 'Library of DustPy extensions'
 readme = { file = 'README.md', content-type = 'text/markdown' }
 keywords = ['science', 'physics', 'mathematics', 'visualization']
