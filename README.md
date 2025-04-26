@@ -25,6 +25,7 @@ For the usage of `DustPyLib` please have a look at its [documentation](https://d
   - [Planetesimal formation](https://dustpylib.readthedocs.io/en/latest/planetesimal_formation.html)
 * [Radiative transfer](https://dustpylib.readthedocs.io/en/latest/radtrans.html)
   - [RADMC-3D](https://dustpylib.readthedocs.io/en/latest/radmc3d.html)
+  - [Slab model](https://dustpylib.readthedocs.io/en/latest/slab.html)
 * [Substructures](https://dustpylib.readthedocs.io/en/latest/substructures.html)
   - [Planetary gaps](https://dustpylib.readthedocs.io/en/latest/planetary_gaps.html)<br /> &nbsp;
 * [A. Contributing / Bug reports / Features requests](https://dustpylib.readthedocs.io/en/latest/A_contrib_bug_feature.html)
